@@ -10,5 +10,8 @@
   "license": "MIT",
   "dependencies": {
     "esbuild": "^0.14.21"
+  },
+  "devDependencies": {
+    "prettier": "^2.5.1"
   }
 }

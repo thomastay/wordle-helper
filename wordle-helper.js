@@ -19,7 +19,7 @@ function update() {
     for (let i = 0; i < guess.length; i++, pos++) {
       const guessElement = document.getElementById(`error${guessNum+1}`);
       if (!isAlpha(guess[i])) {
-        guessElement.innerHTML = `The inputted char ${guess[i]} is not a character from a-z. `;
+        guessElement.innerHTML = `The inputted char ${guess[i]} is not a character from A-Z. `;
         return;
       }
       if (pos >= 5) {
@@ -68,7 +68,7 @@ function update() {
 
   // -------- Give valid  ------------
   const suggestionsRootElement = document.getElementById("suggestions");
-  const suggestions = solutionWords.filter(word => {
+  let suggestions = solutionWords.filter(word => {
     for (let i = 0; i < word.length; i++) {
       const 
         c = word[i],
@@ -97,6 +97,7 @@ function update() {
     // other than the ones which are correct
     return isSubset(contained, nonCorrectCharsCountTable);
   });
+  suggestions = suggestions.slice(0, 200);
   suggestions.sort((s1, s2) => {
     const size1 = (new Set(Array.from(s1))).size;
     const size2 = (new Set(Array.from(s2))).size;
