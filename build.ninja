@@ -1,4 +1,15 @@
-wordle-helper-built = ../../../Documents/website/wordle-helper/index.html
-rule buildtemplate
-    command = python3 build-template.py $in $out
-build $wordle-helper-built: buildtemplate index.js index.css template.html
+wordleOut = ../../../Documents/website/wordle-helper/index.html
+minifyOpts = --minify
+dist = dist
+rule python
+    command = python3 $in $out
+
+rule esbuild
+    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $extraOpts $in --outfile=$out
+
+build $dist/index.min.js: esbuild index.js
+    minifyOpts = --minify --bundle --global-name=update
+
+build $dist/index.min.css: esbuild index.css
+
+build $wordleOut: python build-template.py template.html $dist/index.min.js $dist/index.min.css

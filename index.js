@@ -1,7 +1,3 @@
-/** A to Z */
-const charCodeForLowercaseA = 97;
-const staticWordleFrequencyTable = [807, 244, 388, 330, 938, 182, 257, 328, 572, 23, 183, 579, 262, 474, 600, 304, 28, 746, 552, 596, 404, 135, 171, 33, 367, 31];
-
 function update() {
   const guesses = []
   for (let i = 1; i <= 6; i++) {
@@ -162,6 +158,9 @@ function isSubset(m1, m2) {
   return true;
 }
 function calcScore(word) {
+  const charCodeForLowercaseA = 97;
+  /** A to Z */
+  const staticWordleFrequencyTable = [807, 244, 388, 330, 938, 182, 257, 328, 572, 23, 183, 579, 262, 474, 600, 304, 28, 746, 552, 596, 404, 135, 171, 33, 367, 31];
   let score = 1;
   for (let i = 0; i < word.length; i++) {
     const c = word.charCodeAt(i) - charCodeForLowercaseA;
