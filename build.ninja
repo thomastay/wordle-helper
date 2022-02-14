@@ -1,4 +1,4 @@
 wordle-helper-built = ../../../Documents/website/wordle-helper/index.html
 rule buildtemplate
     command = python3 build-template.py $in $out
-build $wordle-helper-built: buildtemplate index.js index.css wordle-helper-template.html
+build $wordle-helper-built: buildtemplate index.js index.css template.html

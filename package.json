@@ -4,6 +4,7 @@
   "description": "",
   "main": "wordle-helper.js",
   "scripts": {
+    "build": "python3 build-template.py index.js index.css template.html",
     "watch": "watchexec -e js,css,html ninja"
   },
   "author": "",
