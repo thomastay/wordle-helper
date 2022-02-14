@@ -1,5 +1,6 @@
 const params = new URLSearchParams(document.location.search);
 const showStats = params.get("showStats");
+const NERDY_DECIMAL_LEN = 4;  // 4 decimal points makes it look super accurate
 window.update = () => {
   const updateStartTime = performance.now();
   const guesses = []
@@ -21,7 +22,9 @@ window.update = () => {
     let pos = 0;
     /** per-guess Map of char to count, which we merge with the outer map at the
      * end of each guess */
-    let guessContainTable = new Map();
+    const guessContainTable = new Map();
+    const guessNotContained = new Set();
+
     for (let i = 0; i < guess.length; i++, pos++) {
       const guessElement = document.getElementById(`error${guessNum+1}`);
       if (!isAlpha(guess[i])) {
@@ -43,6 +46,7 @@ window.update = () => {
               guessElement.innerHTML += `Correct letter ${guess[i]} in position ${pos+1} conflicts with fact that it is not contained previously. Overwriting. `;
               notContained.delete(guess[i]);
             }
+            guessNotContained.delete(guess[i]);
             correct.set(pos, guess[i]);
             decCountTable(contained, guess[i]);
             i++;
@@ -56,6 +60,7 @@ window.update = () => {
               guessElement.innerHTML += `Wrong letter ${guess[i]} in position ${pos+1} conflicts with fact that it is not contained previously. Overwriting. `;
               notContained.delete(guess[i]);
             }
+            guessNotContained.delete(guess[i]);
             wrong.set(pos, guess[i]);
             incCountTable(guessContainTable, guess[i]);
             i++;
@@ -67,13 +72,14 @@ window.update = () => {
       if (correct.has(pos)) {
         guessElement.innerHTML += `Not contained letter ${guess[i]} in position ${pos+1} conflicts with previous correct letter ${correct.get(pos)}. Overwriting. `;
       }
-      notContained.add(guess[i]);
+      guessNotContained.add(guess[i]);
     }
     if (pos > 0 && pos < 5) {
       document.getElementById(`error${guessNum+1}`).innerHTML += `Too few characters. `;
       return;
     }
     mergeCountTable(contained, guessContainTable);
+    setUnion(notContained, guessNotContained);
   });
 
   // -------- Give valid  ------------
@@ -129,7 +135,7 @@ window.update = () => {
   const suggestionsNodes = limitedSuggestions.map(suggestionText => {
     const n = document.createElement("li");
     if (showStats) {
-      n.innerHTML = `${suggestionText} (${(calcScore(suggestionText) / maxScore).toFixed(4)})`;
+      n.innerHTML = `${suggestionText} (${(calcScore(suggestionText) / maxScore).toFixed(NERDY_DECIMAL_LEN)})`;
     } else {
       n.innerHTML = suggestionText;
     }
@@ -141,7 +147,7 @@ window.update = () => {
   }
   if (showStats) {
     const updateTime = performance.now() - updateStartTime;
-    suggestionsNodes.push(document.createTextNode(`Rendered in ${updateTime} ms`));
+    suggestionsNodes.push(document.createTextNode(`Rendered in ${updateTime.toFixed(NERDY_DECIMAL_LEN)} ms`));
   }
   suggestionsRootElement.replaceChildren(...suggestionsNodes);
 }
@@ -213,5 +219,10 @@ function calcScore(word) {
     score *= staticWordleFrequencyTable[c]
   }
   return score;
+}
+function setUnion(setA, setB) {
+    for (let elem of setB) {
+        setA.add(elem)
+    }
 }
 window.onload = update;
