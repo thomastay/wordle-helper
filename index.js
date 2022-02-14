@@ -1,4 +1,4 @@
-function update() {
+window.update = () => {
   const guesses = []
   for (let i = 1; i <= 6; i++) {
     // Clean out errors
@@ -16,6 +16,9 @@ function update() {
   guesses.map(g => g.toLowerCase()).forEach((guess, guessNum) => {
     // regular char is discarded, correct char is succeeded by a period, correct but reordered by a comma
     let pos = 0;
+    /** per-guess Map of char to count, which we merge with the outer map at the
+     * end of each guess */
+    let guessContainTable = new Map();
     for (let i = 0; i < guess.length; i++, pos++) {
       const guessElement = document.getElementById(`error${guessNum+1}`);
       if (!isAlpha(guess[i])) {
@@ -37,7 +40,9 @@ function update() {
               guessElement.innerHTML += `Correct letter ${guess[i]} in position ${pos+1} conflicts with fact that it is not contained previously. Overwriting. `;
               notContained.delete(guess[i]);
             }
-            correct.set(pos, guess[i++]);
+            correct.set(pos, guess[i]);
+            decCountTable(contained, guess[i]);
+            i++;
             continue;
           case ',':
             if (correct.has(pos)) {
@@ -49,7 +54,8 @@ function update() {
               notContained.delete(guess[i]);
             }
             wrong.set(pos, guess[i]);
-            incCountTable(contained, guess[i++]);
+            incCountTable(guessContainTable, guess[i]);
+            i++;
             continue;
           default:
             // do nothing, fallthrough;
@@ -64,6 +70,7 @@ function update() {
       document.getElementById(`error${guessNum+1}`).innerHTML += `Too few characters. `;
       return;
     }
+    mergeCountTable(contained, guessContainTable);
   });
 
   // -------- Give valid  ------------
@@ -141,6 +148,25 @@ function incCountTable(m, c) {
     m.set(c, res + 1);
   } else {
     m.set(c, 1);
+  }
+}
+/** Merge src into dst */
+function mergeCountTable(dst, src) {
+  for (const [k, n] of src) {
+    // don't override the value since it's bigger
+    if (dst.get(k) > n) continue;
+    dst.set(k, n);
+  }
+}
+// lower to 0, no lower.
+function decCountTable(m, c) {
+  let res;
+  if (res = m.get(c)) {
+    if (res == 1) {
+      m.delete(c);
+    } else {
+      m.set(c, res - 1);
+    }
   }
 }
 /** Whether m1 is a subset of m2 */

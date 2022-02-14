@@ -5,10 +5,10 @@ rule python
     command = python3 $in $out
 
 rule esbuild
-    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $extraOpts $in --outfile=$out
+    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $in --outfile=$out
 
 build $dist/index.min.js: esbuild index.js
-    minifyOpts = --minify --bundle --global-name=update
+    minifyOpts = --minify --bundle
 
 build $dist/index.min.css: esbuild index.css
 
