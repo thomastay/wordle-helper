@@ -1,4 +1,7 @@
+const params = new URLSearchParams(document.location.search);
+const showStats = params.get("showStats");
 window.update = () => {
+  const updateStartTime = performance.now();
   const guesses = []
   for (let i = 1; i <= 6; i++) {
     // Clean out errors
@@ -115,13 +118,30 @@ window.update = () => {
     }
     return size2 - size1;
   });
+  let maxScore = 0;
+  if (showStats) {
+    for (const s of suggestions) {
+      const score = calcScore(s);
+      if (score > maxScore) maxScore = score;
+    }
+  }
+
   const suggestionsNodes = limitedSuggestions.map(suggestionText => {
     const n = document.createElement("li");
-    n.innerHTML = suggestionText;
+    if (showStats) {
+      n.innerHTML = `${suggestionText} (${(calcScore(suggestionText) / maxScore).toFixed(4)})`;
+    } else {
+      n.innerHTML = suggestionText;
+    }
+
     return n;
   });
   if (suggestions.length > limitedSuggestions.length) {
     suggestionsNodes.push(document.createTextNode(`(${limitedSuggestions.length} out of ${suggestions.length} words shown)`));
+  }
+  if (showStats) {
+    const updateTime = performance.now() - updateStartTime;
+    suggestionsNodes.push(document.createTextNode(`Rendered in ${updateTime} ms`));
   }
   suggestionsRootElement.replaceChildren(...suggestionsNodes);
 }
