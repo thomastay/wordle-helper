@@ -97,17 +97,20 @@ function update() {
     // other than the ones which are correct
     return isSubset(contained, nonCorrectCharsCountTable);
   });
-  suggestions = suggestions.slice(0, 200);
-  suggestions.sort((s1, s2) => {
+  const limitedSuggestions = suggestions.slice(0, 200);
+  limitedSuggestions.sort((s1, s2) => {
     const size1 = (new Set(Array.from(s1))).size;
     const size2 = (new Set(Array.from(s2))).size;
     return size2 - size1;
   });
-  const suggestionsNodes = suggestions.map(suggestionText => {
+  const suggestionsNodes = limitedSuggestions.map(suggestionText => {
     const n = document.createElement("li");
     n.innerHTML = suggestionText;
     return n;
   });
+  if (suggestions.length > limitedSuggestions.length) {
+    suggestionsNodes.push(document.createTextNode(`(${limitedSuggestions.length} out of ${suggestions.length} words shown)`));
+  }
   suggestionsRootElement.replaceChildren(...suggestionsNodes);
 }
 function assert(ok, message) {
