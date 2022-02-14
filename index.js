@@ -34,7 +34,7 @@ function update() {
               guessElement.innerHTML += `Correct letter ${guess[i]} in position ${pos+1} conflicts with previous correct letter ${correct.get(pos)}. Overwriting. `;
             }
             if (notContained.has(guess[i])) {
-              guessElement.innerHTML += `Correct letter ${guess[i]} in position ${pos+1} conflicts with previous not contained letter. Overwriting. `;
+              guessElement.innerHTML += `Correct letter ${guess[i]} in position ${pos+1} conflicts with fact that it is not contained previously. Overwriting. `;
               notContained.delete(guess[i]);
             }
             correct.set(pos, guess[i++]);
@@ -45,7 +45,7 @@ function update() {
               correct.delete(pos);
             }
             if (notContained.has(guess[i])) {
-              guessElement.innerHTML += `Wrong letter ${guess[i]} in position ${pos+1} conflicts with previous not contained letter. Overwriting. `;
+              guessElement.innerHTML += `Wrong letter ${guess[i]} in position ${pos+1} conflicts with fact that it is not contained previously. Overwriting. `;
               notContained.delete(guess[i]);
             }
             wrong.set(pos, guess[i]);

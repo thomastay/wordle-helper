@@ -4,14 +4,12 @@
   "description": "",
   "main": "wordle-helper.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "watch": "watchexec -e js,css,html ninja"
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "esbuild": "^0.14.21"
-  },
   "devDependencies": {
+    "esbuild": "^0.14.21",
     "prettier": "^2.5.1"
   }
 }
