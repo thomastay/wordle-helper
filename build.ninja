@@ -1,0 +1,4 @@
+wordle-helper-built = ../../../Documents/website/wordle-helper.html
+rule updatehtml
+    command = python3 $in $out
+build $wordle-helper-built: updatehtml update-line.py wordle-helper.js wordle-helper-template.html

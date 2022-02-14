@@ -1,0 +1,14 @@
+{
+  "name": "wordle-helper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "wordle-helper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "esbuild": "^0.14.21"
+  }
+}
