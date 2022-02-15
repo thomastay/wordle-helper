@@ -11,6 +11,7 @@ window.update = () => {
   }
   /* Map of position to char */
   const correct = new Map();
+  /** Map of position to set of chars */
   const wrong = new Map();
   const notContained = new Set();
   /** Map of char to count */
@@ -59,7 +60,7 @@ window.update = () => {
               guessElement.innerHTML += `Wrong letter ${guess[i]} in position ${pos+1} conflicts with fact that it is not contained previously. Overwriting. `;
               notContained.delete(guess[i]);
             }
-            wrong.set(pos, guess[i]);
+            incSetTable(wrong, pos, guess[i]);
             incCountTable(guessContainTable, guess[i]);
             i++;
             continue;
@@ -82,16 +83,18 @@ window.update = () => {
 
   // -------- Give valid  ------------
   const suggestionsRootElement = document.getElementById("suggestions");
+  const afterSuggestionsElement = document.getElementById("afterSuggestions");
+  afterSuggestionsElement.innerHTML = "";
   let suggestions = solutionWords.filter(word => {
     for (let i = 0; i < word.length; i++) {
       const 
         c = word[i],
         correctChar = correct.get(i),
-        wrongChar = wrong.get(i);
+        wrongChars = wrong.get(i);
       if (correctChar === c) continue; // Handle duplicates
       if (
         notContained.has(c) ||
-        (wrongChar === c) ||
+        (wrongChars && wrongChars.has(c)) ||
         (correctChar && correctChar !== c)
       ) {
         return false;
@@ -141,11 +144,17 @@ window.update = () => {
     return n;
   });
   if (suggestions.length > limitedSuggestions.length) {
-    suggestionsNodes.push(document.createTextNode(`(${limitedSuggestions.length} out of ${suggestions.length} words shown)`));
+    afterSuggestions.append(`(${limitedSuggestions.length} out of ${suggestions.length} words shown)`);
   }
   if (showStats) {
     const updateTime = performance.now() - updateStartTime;
-    suggestionsNodes.push(document.createTextNode(`Rendered in ${updateTime.toFixed(NERDY_DECIMAL_LEN)} ms`));
+    afterSuggestions.append(makeDOMElt("p", `Rendered in ${updateTime.toFixed(NERDY_DECIMAL_LEN)} ms`));
+    afterSuggestions.append(makeDOMElt("p", `Correct: ${[...correct.entries()]}`));
+    afterSuggestions.append(makeDOMElt("p", `Wrong: ${
+      [...wrong.entries()].map( ([k,s]) => [k, [...s.values()]])
+    }`));
+    afterSuggestions.append(makeDOMElt("p", `Contained: ${[...contained.entries()]}`));
+    afterSuggestions.append(makeDOMElt("p", `Not contained: ${[...notContained.values()]}`));
   }
   suggestionsRootElement.replaceChildren(...suggestionsNodes);
 }
@@ -193,6 +202,14 @@ function decCountTable(m, c) {
     }
   }
 }
+function incSetTable(m, i, c) {
+  let res;
+  if (res = m.get(i)) {
+    res.add(c);
+  } else {
+    m.set(i, new Set([c]));
+  }
+}
 /** Whether m1 is a subset of m2 */
 function isSubset(m1, m2) {
   for (const [k, v] of m1) {
@@ -222,5 +239,11 @@ function setUnion(setA, setB) {
     for (let elem of setB) {
         setA.add(elem)
     }
+}
+/// DOM operations
+function makeDOMElt(type, text) {
+  const node = document.createElement(type);
+  node.innerHTML = text;
+  return node;
 }
 window.onload = update;
