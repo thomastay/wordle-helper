@@ -10,10 +10,10 @@ rule buildTemplate
 rule esbuild
     command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $in --outfile=$out
 
-rule gobuild
-    command = go build -o $bin/ $relative/cmd/build_template
+rule gobuilddir
+    command = go build -o $bin/ $relative/$in
 
-build $bin/build_template.exe: gobuild cmd/build_template | ./cmd/build_template/main.go
+build $bin/build_template.exe: gobuilddir cmd/build_template | ./cmd/build_template/main.go
 
 build $dist/index.min.js: esbuild index.js
     minifyOpts = --minify --bundle
