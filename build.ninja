@@ -1,5 +1,6 @@
 wordleOut = ../../../Documents/website/wordle-helper/index.html
 minifyOpts = --minify
+src = src
 dist = dist
 bin = bin
 relative = .
@@ -13,11 +14,11 @@ rule esbuild
 rule gobuilddir
     command = go build -o $bin/ $relative/$in
 
-build $bin/build_template.exe: gobuilddir cmd/build_template | ./cmd/build_template/main.go
+build $bin/build_template.exe: gobuilddir cmd/build_template
 
-build $dist/index.min.js: esbuild index.js
+build $dist/index.min.js: esbuild $src/index.js
     minifyOpts = --minify --bundle
 
-build $dist/index.min.css: esbuild index.css
+build $dist/index.min.css: esbuild $src/index.css
 
-build $wordleOut: buildTemplate template.html $dist/index.min.js $dist/index.min.css | $bin/build_template.exe
+build $wordleOut: buildTemplate $src/template.html $dist/index.min.js $dist/index.min.css | $bin/build_template.exe
