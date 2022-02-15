@@ -1,4 +1,4 @@
 node_modules/
 .ninja_log
 dist/
-tools/*.exe
+bin/

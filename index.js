@@ -46,7 +46,6 @@ window.update = () => {
               guessElement.innerHTML += `Correct letter ${guess[i]} in position ${pos+1} conflicts with fact that it is not contained previously. Overwriting. `;
               notContained.delete(guess[i]);
             }
-            guessNotContained.delete(guess[i]);
             correct.set(pos, guess[i]);
             decCountTable(contained, guess[i]);
             i++;
@@ -60,7 +59,6 @@ window.update = () => {
               guessElement.innerHTML += `Wrong letter ${guess[i]} in position ${pos+1} conflicts with fact that it is not contained previously. Overwriting. `;
               notContained.delete(guess[i]);
             }
-            guessNotContained.delete(guess[i]);
             wrong.set(pos, guess[i]);
             incCountTable(guessContainTable, guess[i]);
             i++;
