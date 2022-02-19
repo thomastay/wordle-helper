@@ -9,16 +9,16 @@ rule buildTemplate
     command = $bin/build_template.exe $in $out
 
 rule esbuild
-    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $in --outfile=$out
+    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $in --outdir=$dist
 
 rule gobuilddir
     command = go build -o $bin/ $relative/$in
 
 build $bin/build_template.exe: gobuilddir cmd/build_template
 
-build $dist/index.min.js: esbuild $src/index.js
-    minifyOpts = --minify --bundle
+build $dist/index.css: esbuild $src/index.css
 
-build $dist/index.min.css: esbuild $src/index.css
+build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.js $src/common.js
+    minifyOpts = --bundle
 
-build $wordleOut: buildTemplate $src/template.html $dist/index.min.js $dist/index.min.css | $bin/build_template.exe
+build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css | $bin/build_template.exe

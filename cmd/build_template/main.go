@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"os"
 	"strings"
 )
@@ -21,11 +22,11 @@ func main() {
 	replaceMap := make(map[string][]byte, 2)
 	minifiedJS, err := os.ReadFile(jsFilename)
 	check(err)
-	replaceMap["<% JS %>"] = minifiedJS
+	replaceMap["<% JS %>"] = bytes.TrimSpace(minifiedJS)
 
 	minifiedCSS, err := os.ReadFile(cssFilename)
 	check(err)
-	replaceMap["<% CSS %>"] = minifiedCSS
+	replaceMap["<% CSS %>"] = bytes.TrimSpace(minifiedCSS)
 
 	templateFile, err := os.Open(templateFilename)
 	check(err)
@@ -40,13 +41,19 @@ func main() {
 	scanner := bufio.NewScanner(templateFile)
 	for scanner.Scan() {
 		currLine := scanner.Text()
+		currLine = strings.TrimSpace(currLine)
 		if strings.HasPrefix(currLine, "<%") {
 			if replace, ok := replaceMap[currLine]; ok {
 				outWriter.Write(replace)
 				continue
 			} //fallthrough
+		} else if strings.HasPrefix(currLine, "<!--") {
+			// This is a line comment
+			continue
 		}
 		outWriter.WriteString(currLine)
-		outWriter.WriteString("\n") // stripped from scanner
+	}
+	if err := scanner.Err(); err != nil {
+		panic(err)
 	}
 }

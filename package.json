@@ -2,10 +2,12 @@
   "name": "wordle-helper",
   "version": "1.0.0",
   "description": "",
-  "main": "wordle-helper.js",
+  "exports": "src/index.js",
+  "type": "module",
   "scripts": {
     "build": "ninja",
-    "watch": "watchexec -e js,css,html ninja"
+    "watch": "watchexec -e js,css,html ninja",
+    "format": "prettier --write src/*.js"
   },
   "author": "",
   "license": "MIT",
