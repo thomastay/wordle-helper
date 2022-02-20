@@ -12,11 +12,16 @@ const showStats = params.get("showStats");
 const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
 
 window.demo = (demoStr1, demoStr2) => {
+  let didPrompt = false; // only prompt once
   for (let i = 1; i <= 6; i++) {
     // Clean out errors
     const currValue = document.getElementById(`input${i}`).value;
-    if (currValue && !window.confirm("Warning: This will override your current guesses. Continue?")) {
-      return;
+    if (currValue && !didPrompt) {
+      if (!window.confirm("Warning: This will override your current guesses. Continue?")) {
+        return;
+      } else {
+        didPrompt = true;
+      }
     }
     document.getElementById(`error${i}`).innerHTML = "";
     document.getElementById(`input${i}`).value = "";
