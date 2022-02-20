@@ -1,3 +1,4 @@
+"use strict";
 import solutionWords from "./solutionWords.json";
 import { GuessType, isAlpha, incCountTable } from "./common";
 import {

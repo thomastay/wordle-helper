@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta
       name="description"
-      content="Help with wordle words. Input your guesses
-  and results and get suggested words to try"
+      content="Help with wordle words. Input your guesses and results and get suggested words to try"
     />
     <meta name="author" content="Thomas Tay Ang Chun" />
     <link rel="icon" type="image/png" href="assets/img/favicon-32x32.png?" sizes="32x32" />
@@ -19,10 +18,9 @@
   </head>
   <body>
     <h1>Enter your wordle guesses below</h1>
-    <p>
-      Entering the letter followed by a period means the letter is in the right spot. Followed by a comma, means it's in
-      the wrong spot. Else, (i.e. you just typed in the letter), it means the letter is not in the answer.
-    </p>
+    <p>Entering the letter followed by a period means the letter is in the right spot.</p>
+    <p>Entering the letter followed by a comma means it's in the wrong spot.</p>
+    <p>Entering the letter on its own means the letter is not in the answer.</p>
     <p>E.g. A,ROSE. means that R,O,S are not in the word, E is in the right place, and A is in the wrong spot.</p>
     <button onclick='demo("A,ROSE.", "DA,NCE.")'>Try it out!</button>
     <ol>
@@ -58,7 +56,6 @@
     </footer>
   </body>
   <script type="text/javascript">
-    'use strict';
     <% JS %>
   </script>
 </html>
