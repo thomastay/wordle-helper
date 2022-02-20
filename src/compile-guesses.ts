@@ -58,6 +58,11 @@ function compileGuess(
             pos,
           )}. Overwriting. `;
         }
+        let currWrong: Set<string> | undefined;
+        if ((currWrong = wrong.get(pos)) && currWrong.has(c)) {
+          errorStr += `Correct letter ${c} in position ${pos + 1} conflicts with previous wrong letter. Overwriting. `;
+          currWrong.delete(c);
+        }
         if (isNotContained(c, knownCharInformation)) {
           errorStr += `Correct letter ${c} in position ${
             pos + 1
@@ -99,11 +104,11 @@ function compileGuess(
       case GuessType.wrong:
         break;
       case GuessType.notContained:
+        incSetTable(wrong, pos, c); // not contained word is wrong
         if (correct.has(pos)) {
           errorStr += `Not contained letter ${c} in position ${
             pos + 1
-          } conflicts with previous correct letter ${correct.get(pos)}. Overwriting. `;
-          correct.delete(pos);
+          } conflicts with previous correct letter ${correct.get(pos)}. Ignoring. `;
         }
         const ci = guessKnownCharInformation.get(c);
         switch (ci?.type) {
