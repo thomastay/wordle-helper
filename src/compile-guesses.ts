@@ -1,17 +1,12 @@
-import { Guess, GuessType, incSetTable, unreachable } from "./common";
-
-// !: order of this type is important, we use Math.max later on
-// TODO mangle props
-const CharInformationType = {
-  notContained: 0,
-  min: 1,
-  exactly: 2,
-} as const;
-
-// TODO figure out how to use CharInformationType as the index
-type CharInformation = { type: 0 } | { type: 1; val: number } | { type: 2; val: number };
-type PositionMap<T> = Map<number, T>;
-type KnownCharInformation = Map<string, CharInformation>;
+import {
+  Guess,
+  GuessType,
+  CharInformationType,
+  KnownCharInformation,
+  PositionMap,
+  incSetTable,
+  unreachable,
+} from "./common";
 
 /**
  * Given a list of guesses, each guess being an array of pairs

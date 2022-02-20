@@ -62,3 +62,16 @@ export function unreachable() {
 //
 
 export type Guess = [string, number][];
+export type PositionMap<T> = Map<number, T>;
+
+// !: order of this type is important, we use Math.max later on
+// TODO mangle props
+export const CharInformationType = {
+  notContained: 0,
+  min: 1,
+  exactly: 2,
+} as const;
+
+// TODO figure out how to use CharInformationType as the index
+export type CharInformation = { type: 0 } | { type: 1; val: number } | { type: 2; val: number };
+export type KnownCharInformation = Map<string, CharInformation>;
