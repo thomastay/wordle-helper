@@ -18,6 +18,6 @@ build $bin/build_template.exe: gobuilddir cmd/build_template
 
 build $dist/index.css: esbuild $src/index.css
 
-build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.js $src/common.js
+build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.ts $src/common.ts
 
 build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css | $bin/build_template.exe

@@ -1,6 +1,12 @@
 import solutionWords from "./solutionWords.json";
 import { GuessType, isAlpha, incCountTable } from "./common";
-import { compileGuesses, isKnownCharInformationSubset, knownCharInformationToStrings, correctToString, wrongToString } from "./compile-guesses";
+import {
+  compileGuesses,
+  isKnownCharInformationSubset,
+  knownCharInformationToStrings,
+  correctToString,
+  wrongToString,
+} from "./compile-guesses";
 const params = new URLSearchParams(document.location.search);
 const showStats = params.get("showStats");
 const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
@@ -53,7 +59,7 @@ window.update = () => {
     });
 
   // Build the contains, wrong, and count tables from the guesses
-  const [ correct, wrong, knownCharInformation, errors ] = compileGuesses(parsedGuesses);
+  const [correct, wrong, knownCharInformation, errors] = compileGuesses(parsedGuesses);
   errors.forEach((errStr, i) => {
     if (errStr) document.getElementById(`error${i + 1}`).innerHTML += errStr;
   });
@@ -124,8 +130,8 @@ window.update = () => {
     afterSuggestionsElement.append(makeParagraph(`Correct: ${correctToString(correct)}`));
     afterSuggestionsElement.append(makeParagraph(`Wrong: ${wrongToString(wrong)}`));
 
-    knownCharInformationToStrings(knownCharInformation).forEach(kciStr => 
-      afterSuggestionsElement.append(makeParagraph(kciStr))
+    knownCharInformationToStrings(knownCharInformation).forEach(kciStr =>
+      afterSuggestionsElement.append(makeParagraph(kciStr)),
     );
   }
   suggestionsRootElement.replaceChildren(...suggestionsNodes);
