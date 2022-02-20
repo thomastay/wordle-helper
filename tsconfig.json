@@ -4,10 +4,13 @@
   ],
   "compilerOptions": {
     "lib": [
-      "esnext"
+      "esnext",
+      "DOM"
     ],
     "downlevelIteration": true,
+    "resolveJsonModule": true,
     "module": "esnext",
+    "moduleResolution": "node",
     "noEmit": true,
     "strict": true,
     "esModuleInterop": true,

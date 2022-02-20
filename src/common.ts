@@ -1,13 +1,6 @@
 /// For misc things
 /// Should not depend on DOM elements
 
-// TODO mangle props? Check if mangle props works across a translation unit
-export const GuessType = {
-  notContained: 0,
-  wrong: 1,
-  correct: 2,
-};
-
 export function assert(ok: boolean, message: string) {
   if (!ok) throw new Error(message);
 }
@@ -60,6 +53,13 @@ export function unreachable() {
 
 /// types
 //
+
+// TODO mangle props? Check if mangle props works across a translation unit
+export const GuessType = {
+  notContained: 0,
+  wrong: 1,
+  correct: 2,
+};
 
 export type Guess = [string, number][];
 export type PositionMap<T> = Map<number, T>;
