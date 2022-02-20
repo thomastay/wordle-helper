@@ -11,6 +11,21 @@ const params = new URLSearchParams(document.location.search);
 const showStats = params.get("showStats");
 const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
 
+window.demo = (demoStr1, demoStr2) => {
+  for (let i = 1; i <= 6; i++) {
+    // Clean out errors
+    const currValue = document.getElementById(`input${i}`).value;
+    if (currValue && !window.confirm("Warning: This will override your current guesses. Continue?")) {
+      return;
+    }
+    document.getElementById(`error${i}`).innerHTML = "";
+    document.getElementById(`input${i}`).value = "";
+  }
+  document.getElementById(`input1`).value = demoStr1;
+  if (demoStr2) document.getElementById(`input2`).value = demoStr2;
+  window.update()
+}
+
 window.update = () => {
   const updateStartTime = performance.now();
   const guesses = [];
@@ -74,7 +89,6 @@ window.update = () => {
         correctChar = correct.get(i),
         wrongChars = wrong.get(i);
       if (correctChar === c) continue; // Handle duplicates
-      // TODO prettier-ignore?
       if ((wrongChars && wrongChars.has(c)) || (correctChar && correctChar !== c)) {
         return false;
       }

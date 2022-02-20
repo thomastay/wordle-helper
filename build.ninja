@@ -1,5 +1,5 @@
 wordleOut = ../../../Documents/website/wordle-helper/index.html
-minifyOpts = --minify --bundle
+minifyOpts = --bundle --minify
 src = src
 dist = dist
 bin = bin

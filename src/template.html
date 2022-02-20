@@ -17,7 +17,8 @@
 <body>
   <h1>Enter your wordle guesses below</h1>
   <p>Entering the letter followed by a period means the letter is in the right spot. Followed by a comma, means it's in the wrong spot. Else, (i.e. you just typed in the letter), it means the letter is not in the answer.</p>
-  <p>E.g. SO.AR,E means that S,A,E are not in the word, O is in the right place, and R is in the wrong spot.</p>
+  <p>E.g. A,ROSE. means that R,O,S are not in the word, E is in the right place, and A is in the wrong spot.</p>
+  <button onclick='demo("A,ROSE.", "DA,NCE.")'>Try it out!</button>
 	<ol>
     <li>
       <input type="text" id="input1" oninput="update()">
@@ -46,6 +47,9 @@
   </ol>
   <ol id="suggestions"></ol>
   <div id="afterSuggestions"></div>
+  <footer>
+    <a href="https://github.com/thomastay/wordle-helper">View source on Github</a>
+  </footer>
 </body>
 <script type="text/javascript">
 'use strict';
