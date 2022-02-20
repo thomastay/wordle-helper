@@ -9,7 +9,7 @@
     "ninja": "ninja",
     "check": "tsc",
     "watch": "watchexec -e js,css,html ninja",
-    "format": "prettier --write src/*.js src/*.ts"
+    "format": "prettier --write src/*.js src/*.ts src/*.html"
   },
   "author": "",
   "license": "MIT",

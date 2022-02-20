@@ -23,8 +23,8 @@ window.demo = (demoStr1, demoStr2) => {
   }
   document.getElementById(`input1`).value = demoStr1;
   if (demoStr2) document.getElementById(`input2`).value = demoStr2;
-  window.update()
-}
+  window.update();
+};
 
 window.update = () => {
   const updateStartTime = performance.now();
