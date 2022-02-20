@@ -3,13 +3,22 @@
  * with each solution word as the solution. It just uses the top suggestion.
  * The goal is to check that every word is reachable
  */
-import { assert, Guess, GuessType } from "./common";
+import { assert, Guess, GuessType, PositionMap } from "./common";
 import { compileGuesses } from "./compile-guesses";
 import { filterGuesses, sortSuggestions } from "./filter-guesses";
 import solutionWords from "./solutionWords.json";
 
+function mapToSortedList<T>(m: PositionMap<T>): T[] {
+  const keys = [...m.keys()].sort();
+  const res = [];
+  for (const key of keys) {
+    res.push(m.get(key) as T);
+  }
+  return res;
+}
+
 function checkGuess(solutionWord: string, guess: string): Guess {
-  const result: Guess = [];
+  const result: PositionMap<[string, number]> = new Map();
   /**
    * Used is a array of booleans, which signify if a letter has been 'used' in the wrong place
    * e.g. if the guess is COLOR and the solution word is AROSE, we want to mark the first O as 'wrong'
@@ -20,24 +29,29 @@ function checkGuess(solutionWord: string, guess: string): Guess {
     used.push(false);
   }
 
-  guessLoop: for (let i = 0; i < guess.length; i++) {
+  for (let i = 0; i < guess.length; i++) {
     const guessChar = guess[i] as string;
     if (guessChar === solutionWord[i]) {
-      result.push([guessChar, GuessType.correct]);
-    } else {
+      result.set(i, [guessChar, GuessType.correct]);
+      used[i] = true;
+    }
+  }
+  guessLoop: for (let i = 0; i < guess.length; i++) {
+    const guessChar = guess[i] as string;
+    if (guessChar !== solutionWord[i]) {
       // Check whether the char exists
       for (let j = 0; j < solutionWord.length; j++) {
         const solutionChar = solutionWord[j];
         if (solutionChar === guessChar && !used[j]) {
-          result.push([guessChar, GuessType.wrong]);
+          result.set(i, [guessChar, GuessType.wrong]);
           used[j] = true;
           continue guessLoop;
         }
       }
-      result.push([guessChar, GuessType.notContained]);
+      result.set(i, [guessChar, GuessType.notContained]);
     }
   }
-  return result;
+  return mapToSortedList(result);
 }
 
 function guessToString(guess: Guess): string {
