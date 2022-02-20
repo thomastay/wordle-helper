@@ -103,13 +103,18 @@ function playWordleAll(startingWord: string): void {
   }
 }
 
-function analyseStartingWords(): void {
+function analyseStartingWords(outputJson: boolean): void {
+  const GOOD_THRESHOLD = 14;
   const allSolutions = solutionWords.slice(0); // don't alter the global
   sortSuggestions(allSolutions);
-  const startingWords = allSolutions.slice(0, 50);
+  const startingWords = allSolutions;
+  let goodWords = [];
+  let bestWord = "";
+  let bestScore = 1000;
+  if (outputJson) {
+    console.log("{");
+  }
   for (const startingWord of startingWords) {
-    console.log("Starting with", startingWord);
-
     // const countsOfNumGuesses: CountTable<number> = new Map();
     let numWordsFailed = 0;
     // const wordsFailed: [string, string[]][] = [];
@@ -123,12 +128,36 @@ function analyseStartingWords(): void {
       }
     }
     // console.log(sortedCountTable(countsOfNumGuesses));
-    console.log("Words failed: ", numWordsFailed);
+    if (outputJson) {
+      console.log(`"${startingWord}": ${numWordsFailed}`);
+      console.error(`"${startingWord}": ${numWordsFailed}`);
+    } else {
+      if (bestScore > numWordsFailed) {
+        bestScore = numWordsFailed;
+        bestWord = startingWord;
+      }
+      if (numWordsFailed <= GOOD_THRESHOLD) {
+        goodWords.push(startingWord);
+      }
+      console.log(
+        `Starting with ${startingWord}.`,
+        "Words failed:",
+        numWordsFailed,
+        `- Best so far ${bestWord} (${bestScore})`,
+        "Good words so far:",
+        JSON.stringify(goodWords),
+      );
+    }
+  }
+  if (outputJson) {
+    // No good way to output this on SIGINT, see https://github.com/nodejs/node/issues/9050
+    console.log("}");
   }
 }
 
+// TODO a better argv parser pls
 if (process.argv[2] === "startingWord") {
-  analyseStartingWords();
+  analyseStartingWords(process.argv[3] === "--json");
 } else {
   playWordleAll("alert");
 }

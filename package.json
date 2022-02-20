@@ -7,6 +7,7 @@
   "scripts": {
     "build": "go build -o bin/ cmd/build_template && esbuild --minify --bundle --outdir=dist/ src/index.js src/index.css && ./bin/build_template.exe src/template.html dist/index.js dist/index.css dist/index.html",
     "ninja": "ninja",
+    "analyze:failures": "node ./dist/index.test.js startingWord --json > dist/failure-analysis.json",
     "check": "tsc",
     "watch": "watchexec -e js,css,html ninja",
     "format": "prettier --write src/*.js src/*.ts src/*.html"
@@ -14,6 +15,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^17.0.18",
     "esbuild": "^0.14.21",
     "prettier": "^2.5.1",
     "typescript": "^4.5.5"
