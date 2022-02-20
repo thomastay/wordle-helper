@@ -58,19 +58,27 @@ function guessToString(guess: Guess): string {
   return guess.map(([c]) => c).join("");
 }
 
-function playWordle(solutionWord: string): void {
+type GuessStats = {
+  guessWords: string[];
+  numSuggestions: number[];
+};
+
+function playWordle(startingWord: string, solutionWord: string): GuessStats {
   const guesses: Guess[] = [];
-  const guessStats = [2047]; // TODO update stats
+  const numSuggestions: number[] = []; // TODO update stats
   const logGuesses = () => {
     console.log("Guesses:", guesses.map(guessToString));
-    console.log("Guess stats:", guessStats);
+    console.log("Num Suggestions:", numSuggestions);
   };
-  let guessWord = "arose"; // nice initial guess
+  let guessWord = startingWord; // nice initial guess
   while (true) {
     guesses.push(checkGuess(solutionWord, guessWord));
     if (guessWord === solutionWord) {
-      logGuesses();
-      return;
+      numSuggestions.push(1); // answer!
+      return {
+        guessWords: guesses.map(guessToString),
+        numSuggestions,
+      };
     }
     const [correct, wrong, knownCharInformation, errors] = compileGuesses(guesses);
     assert(
@@ -79,7 +87,7 @@ function playWordle(solutionWord: string): void {
     );
     const suggestions = filterGuesses(correct, wrong, knownCharInformation, solutionWords);
     sortSuggestions(suggestions);
-    guessStats.push(suggestions.length);
+    numSuggestions.push(suggestions.length);
     if (!suggestions.some(sugg => sugg === solutionWord)) {
       logGuesses();
       console.log("Suggestions", suggestions);
@@ -89,7 +97,38 @@ function playWordle(solutionWord: string): void {
   }
 }
 
-for (const solutionWord of solutionWords) {
-  console.log(`Playing ${solutionWord}`);
-  playWordle(solutionWord);
+function playWordleAll(startingWord: string): void {
+  for (const solutionWord of solutionWords) {
+    playWordle(startingWord, solutionWord);
+  }
+}
+
+function analyseStartingWords(): void {
+  const allSolutions = solutionWords.slice(0); // don't alter the global
+  sortSuggestions(allSolutions);
+  const startingWords = allSolutions.slice(0, 50);
+  for (const startingWord of startingWords) {
+    console.log("Starting with", startingWord);
+
+    // const countsOfNumGuesses: CountTable<number> = new Map();
+    let numWordsFailed = 0;
+    // const wordsFailed: [string, string[]][] = [];
+    for (const solutionWord of solutionWords) {
+      // console.log(`Playing ${solutionWord}`);
+      const stats = playWordle(startingWord, solutionWord);
+      // incCountTable(countsOfNumGuesses, stats.guessWords.length);
+      if (stats.guessWords.length > 6) {
+        numWordsFailed++;
+        // wordsFailed.push([solutionWord, stats.guessWords]);
+      }
+    }
+    // console.log(sortedCountTable(countsOfNumGuesses));
+    console.log("Words failed: ", numWordsFailed);
+  }
+}
+
+if (process.argv[2] === "startingWord") {
+  analyseStartingWords();
+} else {
+  playWordleAll("alert");
 }

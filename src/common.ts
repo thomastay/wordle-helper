@@ -21,15 +21,24 @@ export function isAlpha(str: string) {
   return true;
 }
 
-type CountTable = Map<string, number>;
+export type CountTable<T> = Map<T, number>;
 // --- count tables ---
-export function incCountTable(m: CountTable, c: string) {
+export function incCountTable<T>(m: CountTable<T>, c: T) {
   let res;
   if ((res = m.get(c))) {
     m.set(c, res + 1);
   } else {
     m.set(c, 1);
   }
+}
+
+export function sortedCountTable<T>(m: CountTable<T>): CountTable<T> {
+  const keys = [...m.keys()].sort();
+  const res: CountTable<T> = new Map();
+  for (const key of keys) {
+    res.set(key, m.get(key) as number);
+  }
+  return res;
 }
 
 export function incSetTable(m: Map<number, Set<string>>, i: number, c: string) {
