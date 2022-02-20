@@ -8,10 +8,10 @@ export const GuessType = {
   correct: 2,
 };
 
-export function assert(ok, message) {
+export function assert(ok: boolean, message: string) {
   if (!ok) throw new Error(message);
 }
-export function isAlpha(str) {
+export function isAlpha(str: string) {
   var code, i, len;
 
   for (i = 0, len = str.length; i < len; i++) {
@@ -27,8 +27,10 @@ export function isAlpha(str) {
   }
   return true;
 }
+
+type CountTable = Map<string, number>;
 // --- count tables ---
-export function incCountTable(m, c) {
+export function incCountTable(m: CountTable, c: string) {
   let res;
   if ((res = m.get(c))) {
     m.set(c, res + 1);
@@ -36,26 +38,8 @@ export function incCountTable(m, c) {
     m.set(c, 1);
   }
 }
-/** Merge src into dst */
-export function mergeCountTable(dst, src) {
-  for (const [k, n] of src) {
-    // don't override the value since it's bigger
-    if (dst.get(k) > n) continue;
-    dst.set(k, n);
-  }
-}
-// lower to 0, no lower.
-export function decCountTable(m, c) {
-  let res;
-  if ((res = m.get(c))) {
-    if (res == 1) {
-      m.delete(c);
-    } else {
-      m.set(c, res - 1);
-    }
-  }
-}
-export function incSetTable(m, i, c) {
+
+export function incSetTable(m: Map<number, Set<string>>, i: number, c: string) {
   let res;
   if ((res = m.get(i))) {
     res.add(c);
@@ -63,22 +47,8 @@ export function incSetTable(m, i, c) {
     m.set(i, new Set([c]));
   }
 }
-/** Whether m1 is a subset of m2 */
-function isSubset(m1, m2) {
-  for (const [k, v] of m1) {
-    let m2Val;
-    if ((m2Val = m2.get(k))) {
-      if (m2Val < v) {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-  return true;
-}
 
-export function setUnion(setA, setB) {
+export function setUnion(setA: Set<string>, setB: Set<string>) {
   for (let elem of setB) {
     setA.add(elem);
   }
@@ -87,3 +57,8 @@ export function setUnion(setA, setB) {
 export function unreachable() {
   throw new Error("unreachable");
 }
+
+/// types
+//
+
+export type Guess = [string, number][];

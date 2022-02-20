@@ -1,4 +1,4 @@
-import { GuessType, incSetTable, unreachable } from "./common";
+import { Guess, GuessType, incSetTable, unreachable } from "./common";
 
 // !: order of this type is important, we use Math.max later on
 // TODO mangle props
@@ -6,51 +6,53 @@ const CharInformationType = {
   notContained: 0,
   min: 1,
   exactly: 2,
-};
+} as const;
 
-// ts-check:
-// type CharInformation =
-//  { type: CharInformationType.notContained, val: undefined }
-//  { type: CharInformationType.min,         val: number }
-//  { type: CharInformationType.exactly,      val: number }
+// TODO figure out how to use CharInformationType as the index
+type CharInformation = { type: 0 } | { type: 1; val: number } | { type: 2; val: number };
+type PositionMap<T> = Map<number, T>;
+type KnownCharInformation = Map<string, CharInformation>;
 
 /**
  * Given a list of guesses, each guess being an array of pairs
  * Create the tables for use in filtering out the valid words
  */
-export function compileGuesses(guesses) {
+export function compileGuesses(
+  guesses: Guess[],
+): [PositionMap<string>, PositionMap<Set<string>>, KnownCharInformation, string[]] {
   /* Map of position to char */
-  const correct = new Map();
+  const correct: PositionMap<string> = new Map();
   /** Map of position to set of chars */
-  const wrong = new Map();
+  const wrong: PositionMap<Set<string>> = new Map();
   /** List of errors for each guess. Empty string if no errors */
-  const errors = [];
+  const errors: string[] = [];
 
   const knownCharInformation = guesses.reduce(
     // kci --> known char information
-    (kci, g, gnum) => compileGuess(correct, wrong, errors, kci, g, gnum),
+    (kci, g) => compileGuess(correct, wrong, errors, kci, g),
     /** Map of char to CharInformation */
     new Map(),
   );
-  return [
-    correct,
-    wrong,
-    knownCharInformation,
-    errors,
-  ];
+  return [correct, wrong, knownCharInformation, errors];
 }
 
 /**
  * Modifies the correct, wrong, and knownCharInformation tables
  * @param guess {[char, number]} Guess is parsed into a pair of (char, GuessType)
  */
-function compileGuess(correct, wrong, errors, knownCharInformation, guess, guessNum) {
+function compileGuess(
+  correct: PositionMap<string>,
+  wrong: PositionMap<Set<string>>,
+  errors: string[],
+  knownCharInformation: KnownCharInformation,
+  guess: Guess,
+): KnownCharInformation {
   let errorStr = "";
-  const guessKnownCharInformation = new Map();
+  const guessKnownCharInformation: KnownCharInformation = new Map();
   guess.forEach(([c, gType], pos) => {
     switch (gType) {
       case GuessType.correct:
-        let prevCorr;
+        let prevCorr: string | undefined;
         if ((prevCorr = correct.get(pos)) && prevCorr !== c) {
           errorStr += `Correct letter ${c} in position ${pos + 1} conflicts with previous correct letter ${correct.get(
             pos,
@@ -64,7 +66,6 @@ function compileGuess(correct, wrong, errors, knownCharInformation, guess, guess
         }
         correct.set(pos, c);
         incKnownCharInformation(c, guessKnownCharInformation);
-        // decCountTable(contained, c);
         break;
       case GuessType.wrong:
         if (correct.has(pos)) {
@@ -135,24 +136,30 @@ function compileGuess(correct, wrong, errors, knownCharInformation, guess, guess
   return knownCharInformation;
 }
 
-function isNotContained(c, knownCharInformation) {
+function isNotContained(c: string, knownCharInformation: KnownCharInformation) {
   let ci;
   if ((ci = knownCharInformation.get(c))) {
     return ci.type === CharInformationType.notContained;
   } else return false;
 }
 
-function incKnownCharInformation(c, knownCharInformation) {
+function incKnownCharInformation(c: string, knownCharInformation: KnownCharInformation) {
   const ci = knownCharInformation.get(c);
-  if (!ci) {
-    knownCharInformation.set(c, { type: CharInformationType.min, val: 1 });
-  } else {
-    ci.val += 1;
+  switch (ci?.type) {
+    case undefined:
+    case CharInformationType.notContained:
+      knownCharInformation.set(c, { type: CharInformationType.min, val: 1 });
+      break;
+    case CharInformationType.min:
+    case CharInformationType.exactly:
+      ci.val += 1;
+      break;
   }
 }
 
-function mergeKnownCharInformation(kci, gcki) {
+function mergeKnownCharInformation(kci: KnownCharInformation, gcki: KnownCharInformation): string {
   // kci == known char information, gcki = guess known char information
+  let errorStr = "";
   for (const [c, ci] of gcki) {
     let currCI;
     if (!(currCI = kci.get(c))) {
@@ -175,7 +182,7 @@ function mergeKnownCharInformation(kci, gcki) {
               errorStr += `Count ${ci.val} for char ${c} is lower than previous count ${currCI.val}. `;
             }
             currCI.val = Math.max(currCI.val, ci.val);
-            currCI.type = Math.max(currCI.type, ci.type); // override if higher type
+            currCI.type = Math.max(currCI.type, ci.type) as 1 | 2; // override if higher type
             break;
           }
         }
@@ -185,9 +192,10 @@ function mergeKnownCharInformation(kci, gcki) {
         unreachable();
     }
   }
+  return errorStr;
 }
 
-export function isKnownCharInformationSubset(charCounts, kci) {
+export function isKnownCharInformationSubset(charCounts: Map<string, number>, kci: KnownCharInformation) {
   for (const [c, ci] of kci) {
     const count = charCounts.get(c) || 0;
     switch (ci.type) {
@@ -205,25 +213,27 @@ export function isKnownCharInformationSubset(charCounts, kci) {
   return true;
 }
 
-export function correctToString(correct) {
+export function correctToString(correct: PositionMap<string>) {
   const res = [];
   for (const [pos, c] of correct) {
-    res.push(`${pos+1} -> ${c}`);
+    res.push(`${pos + 1} -> ${c}`);
   }
   return res.join(", ");
 }
 
-export function wrongToString(wrong) {
+export function wrongToString(wrong: PositionMap<Set<string>>) {
   const res = [];
   for (const [pos, cs] of wrong) {
-    res.push(`${pos+1} -> [${[...cs.values()]}]`);
+    res.push(`${pos + 1} -> [${[...cs.values()]}]`);
   }
   return res.join(", ");
 }
 
-export function knownCharInformationToStrings(kci) {
+export function knownCharInformationToStrings(kci: KnownCharInformation) {
   let res = [];
-  const notContained = [...kci.entries()].filter(([_c, {type}]) => type === CharInformationType.notContained).map(([c]) => c);
+  const notContained = [...kci.entries()]
+    .filter(([_c, { type }]) => type === CharInformationType.notContained)
+    .map(([c]) => c);
   res.push(`Letters not present: ${notContained}.`);
 
   for (const [c, ci] of kci) {
