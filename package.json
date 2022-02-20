@@ -5,7 +5,8 @@
   "exports": "./src/index.js",
   "type": "module",
   "scripts": {
-    "build": "ninja",
+    "build": "go build -o bin/ cmd/build_template && esbuild --minify --bundle --outdir=dist/ src/index.js src/index.css && ./bin/build_template.exe src/template.html dist/index.js dist/index.css dist/index.html",
+    "ninja": "ninja",
     "check": "tsc",
     "watch": "watchexec -e js,css,html ninja",
     "format": "prettier --write src/*.js src/*.ts"
