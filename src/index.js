@@ -27,7 +27,7 @@ window.suggestStartingWord = () => {
   suggestedStartingWordElement.appendChild(
     makeDOMElt("p", `Try starting with: ${solutionWords[goodStartingWordsIndices[[currStartingWordIndex]]]}`),
   );
-  currStartingWordIndex = Math.floor(Math.random() * goodStartingWordsIndices.length);
+  currStartingWordIndex = (currStartingWordIndex + 1) % goodStartingWordsIndices.length;
 };
 
 window.demo = (demoStr1, demoStr2) => {

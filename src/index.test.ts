@@ -159,5 +159,5 @@ function analyseStartingWords(outputJson: boolean): void {
 if (process.argv[2] === "startingWord") {
   analyseStartingWords(process.argv[3] === "--json");
 } else {
-  playWordleAll("alert");
+  playWordleAll("plate");
 }
