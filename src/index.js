@@ -12,7 +12,23 @@ import { filterGuesses, sortSuggestions, calcScore } from "./filter-guesses";
 
 const params = new URLSearchParams(document.location.search);
 const showStats = params.get("showStats");
-const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
+
+// computed by tools/analyze-wordle.js, which in turns is using src/index.test.ts startingWord --json
+const goodStartingWordsIndices = [
+  1263, 1650, 1363, 1683, 1315, 1268, 1641, 361, 435, 1462, 674, 1635, 1294, 2031, 192, 1464, 1663, 1262, 185, 1470,
+  1458, 1206, 1640, 1755, 1209, 449, 552, 239, 445, 1744, 1269, 677, 144, 1986, 1307, 1658,
+];
+
+let currStartingWordIndex = Math.floor(Math.random() * goodStartingWordsIndices.length);
+
+window.suggestStartingWord = () => {
+  const suggestedStartingWordElement = document.getElementById("suggested-starting-word");
+  suggestedStartingWordElement.innerHTML = "";
+  suggestedStartingWordElement.appendChild(
+    makeDOMElt("p", `Try starting with: ${solutionWords[goodStartingWordsIndices[[currStartingWordIndex]]]}`),
+  );
+  currStartingWordIndex = Math.floor(Math.random() * goodStartingWordsIndices.length);
+};
 
 window.demo = (demoStr1, demoStr2) => {
   let didPrompt = false; // only prompt once
@@ -97,6 +113,7 @@ window.update = () => {
   const limitedSuggestions = suggestions.slice(0, 200);
   sortSuggestions(limitedSuggestions);
   let maxScore = 0;
+
   if (showStats) {
     for (const s of suggestions) {
       const score = calcScore(s);
@@ -104,6 +121,7 @@ window.update = () => {
     }
   }
 
+  const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
   const suggestionsNodes = limitedSuggestions.map(suggestionText => {
     const n = document.createElement("li");
     if (showStats) {

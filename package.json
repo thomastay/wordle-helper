@@ -10,7 +10,7 @@
     "analyze:failures": "node ./dist/index.test.js startingWord --json > dist/failure-analysis.json",
     "check": "tsc",
     "watch": "watchexec -e js,css,html ninja",
-    "format": "prettier --write src/*.js src/*.ts src/*.html"
+    "format": "prettier --write src/*.js src/*.ts src/*.html tools/*.js"
   },
   "author": "",
   "license": "MIT",

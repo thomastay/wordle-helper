@@ -76,3 +76,12 @@ input {
   font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   text-transform: uppercase;
 }
+
+#suggested-starting-word {
+  font-size: 20px;
+}
+
+button {
+  margin: 4px 4px;
+  padding: 12px 24px;
+}
