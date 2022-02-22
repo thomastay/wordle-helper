@@ -19,8 +19,7 @@ export function filterGuesses(
     }
     // make a map of non correct chars
     const charCountTable = new Map();
-    for (let i = 0; i < word.length; i++) {
-      const c = word[i] as string;
+    for (const c of word) {
       incCountTable(charCountTable, c);
     }
     // check that word contains all the needed chars
