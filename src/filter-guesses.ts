@@ -7,10 +7,10 @@ export function sortAndFilterGuesses(
   knownCharInformation: KnownCharInformation,
   solutionWords: string[],
   limit: number,
-): string[] {
+): [string[], number] {
   const filtered = filterGuesses(correct, wrong, knownCharInformation, solutionWords);
   sortSuggestions(filtered);
-  return filtered.slice(0, limit);
+  return [filtered.slice(0, limit), filtered.length];
 }
 
 export function filterGuesses(

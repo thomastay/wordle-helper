@@ -107,10 +107,15 @@ window.update = () => {
   const suggestionsRootElement = document.getElementById("suggestions");
   const afterSuggestionsElement = document.getElementById("afterSuggestions");
   afterSuggestionsElement.innerHTML = "";
-  const suggestions = sortAndFilterGuesses(correct, wrong, knownCharInformation, solutionWords, 200);
+  const [suggestions, numFilteredTotal] = sortAndFilterGuesses(
+    correct,
+    wrong,
+    knownCharInformation,
+    solutionWords,
+    200,
+  );
 
   // -------- Sort and display it to the screen -----------
-  const limitedSuggestions = suggestions.slice(0, 200);
   let maxScore = 0;
 
   if (showStats) {
@@ -121,7 +126,7 @@ window.update = () => {
   }
 
   const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
-  const suggestionsNodes = limitedSuggestions.map(suggestionText => {
+  const suggestionsNodes = suggestions.map(suggestionText => {
     const n = document.createElement("li");
     if (showStats) {
       n.innerHTML = `${suggestionText} (${(calcScore(suggestionText) / maxScore).toFixed(NERDY_DECIMAL_LEN)})`;
@@ -131,8 +136,8 @@ window.update = () => {
 
     return n;
   });
-  if (suggestions.length > limitedSuggestions.length) {
-    afterSuggestionsElement.append(`(${limitedSuggestions.length} out of ${suggestions.length} words shown)`);
+  if (numFilteredTotal > suggestions.length) {
+    afterSuggestionsElement.append(`(${suggestions.length} out of ${numFilteredTotal} words shown)`);
   }
   if (showStats) {
     const updateTime = performance.now() - updateStartTime;
