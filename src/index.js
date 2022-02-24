@@ -8,7 +8,7 @@ import {
   correctToString,
   wrongToString,
 } from "./compile-guesses";
-import { filterGuesses, sortSuggestions, calcScore } from "./filter-guesses";
+import { sortAndFilterGuesses, calcScore } from "./filter-guesses";
 
 const params = new URLSearchParams(document.location.search);
 const showStats = params.get("showStats");
@@ -107,11 +107,10 @@ window.update = () => {
   const suggestionsRootElement = document.getElementById("suggestions");
   const afterSuggestionsElement = document.getElementById("afterSuggestions");
   afterSuggestionsElement.innerHTML = "";
-  const suggestions = filterGuesses(correct, wrong, knownCharInformation, solutionWords);
+  const suggestions = sortAndFilterGuesses(correct, wrong, knownCharInformation, solutionWords, 200);
 
   // -------- Sort and display it to the screen -----------
   const limitedSuggestions = suggestions.slice(0, 200);
-  sortSuggestions(limitedSuggestions);
   let maxScore = 0;
 
   if (showStats) {

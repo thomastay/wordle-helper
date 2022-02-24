@@ -1,6 +1,18 @@
 import { incCountTable, PositionMap, KnownCharInformation } from "./common";
 import { isKnownCharInformationSubset } from "./compile-guesses";
 
+export function sortAndFilterGuesses(
+  correct: PositionMap<string>,
+  wrong: PositionMap<Set<string>>,
+  knownCharInformation: KnownCharInformation,
+  solutionWords: string[],
+  limit: number,
+): string[] {
+  const filtered = filterGuesses(correct, wrong, knownCharInformation, solutionWords);
+  sortSuggestions(filtered);
+  return filtered.slice(0, limit);
+}
+
 export function filterGuesses(
   correct: PositionMap<string>,
   wrong: PositionMap<Set<string>>,
