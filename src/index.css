@@ -1,3 +1,4 @@
+/* Credit to https://newcss.net/ */
 * {
   box-sizing: border-box;
 }
@@ -28,6 +29,23 @@ a:visited {
 a:hover {
   color: dodgerblue;
 }
+input {
+  padding: 10px 20px;
+  margin: 2px 0;
+  font-size: 16px;
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  text-transform: uppercase;
+}
+
+#suggested-starting-word {
+  font-size: 20px;
+}
+button {
+  margin: 4px 4px;
+  padding: 12px 24px;
+}
+
+/*
 img {
   height: auto;
   max-width: 100%;
@@ -69,19 +87,4 @@ hr {
   height: 1px;
   margin: 2rem 0;
 }
-input {
-  padding: 10px 20px;
-  margin: 2px 0;
-  font-size: 16px;
-  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-  text-transform: uppercase;
-}
-
-#suggested-starting-word {
-  font-size: 20px;
-}
-
-button {
-  margin: 4px 4px;
-  padding: 12px 24px;
-}
+*/
