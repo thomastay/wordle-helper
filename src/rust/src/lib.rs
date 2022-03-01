@@ -23,24 +23,27 @@ const STATIC_WORDLE_FREQUENCY_TABLE: [u32; 26] = [
 ];
 
 /// We can represent each wordle word as a single 5 digit base 26 number
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct WordleWord(u32);
 impl WordleWord {
     #[must_use]
-    pub fn score(self) -> u64 {
+    pub fn score(self) -> u32 {
         // step1: each letter is static_table[i]
         // step2: the number of distinct letters is distinct * 26^5
-        let mut score: u64 = 0;
+        let mut score: u32 = 0;
         let mut char_set = HashSet::new();
         for c in self.to_guess_str() {
             char_set.insert(c);
             let freq = STATIC_WORDLE_FREQUENCY_TABLE[(c - b'a') as usize];
-            score *= u64::from(freq);
+            score *= freq;
         }
         // add distinct letters
-        score + u64::pow(26, 5) * char_set.len() as u64
+        score + u32::pow(26, 5) * char_set.len() as u32
     }
 
+    /// Returns the char at index i
+    /// # Panics
+    /// Out of bounds panic
     #[must_use]
     pub fn index(self, i: usize) -> u8 {
         assert!(i < 5, "Index out of bounds");
@@ -331,16 +334,47 @@ fn is_valid_word(word: WordleWord, guesses: &CompileGuessResult) -> bool {
         .is_subset_of(&char_count_table)
 }
 
+const SOLUTION_WORDS: [WordleWord; 1] = [WordleWord(0)];
+
+pub struct PlayStats {
+    num_guesses: usize,
+}
+
+/// # Panics
+/// Panics if the solution word is not found in the suggestions
+#[must_use]
+pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStats {
+    let max_guesses = 12; // in case of infinite loop
+    let mut guesses = Vec::new();
+    loop {
+        guesses.push(guess_word.check_against(solution));
+        if guess_word == solution || guesses.len() > max_guesses {
+            return PlayStats {
+                num_guesses: guesses.len(),
+            };
+        }
+        let compile_guesses_result = compile_guesses(&guesses);
+        let suggestions = SOLUTION_WORDS
+            .iter()
+            .copied()
+            .filter(|&w| is_valid_word(w, &compile_guesses_result))
+            .collect::<Vec<WordleWord>>();
+        assert!(
+            suggestions.iter().any(|&w| w == solution),
+            "solution word not found in suggestions"
+        );
+
+        guess_word = suggestions
+            .into_iter()
+            .max_by_key(|w| w.score())
+            .expect("suggestions must be nonempty");
+    }
+}
+
 /// ------ helpers -------
 
 fn add_to_set(s: &mut PositionMap<HashSet<u8>>, i: u8, c: u8) {
-    if let Some(char_set) = s.get_mut(&i) {
-        char_set.insert(c);
-    } else {
-        let mut st = HashSet::new();
-        st.insert(c);
-        s.insert(i, st);
-    }
+    s.entry(i).or_default().insert(c);
 }
 
 /// ------------ Tests --------------
