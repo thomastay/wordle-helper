@@ -12,14 +12,138 @@
 #![allow(clippy::match_same_arms)]
 
 use std::collections::{HashMap, HashSet};
+use std::convert::TryFrom;
 
 const WORDLE_WORD_LEN: usize = 5;
 
+/// Precomputed letter frequency table of the entire solution data set
+const STATIC_WORDLE_FREQUENCY_TABLE: [u32; 26] = [
+    807, 244, 388, 330, 938, 182, 257, 328, 572, 23, 183, 579, 262, 474, 600, 304, 28, 746, 552,
+    596, 404, 135, 171, 33, 367, 31,
+];
+
 /// We can represent each wordle word as a single 5 digit base 26 number
-pub type WordleWord = i32;
+#[derive(Copy, Clone)]
+pub struct WordleWord(u32);
+impl WordleWord {
+    #[must_use]
+    pub fn score(self) -> u64 {
+        // step1: each letter is static_table[i]
+        // step2: the number of distinct letters is distinct * 26^5
+        let mut score: u64 = 0;
+        let mut char_set = HashSet::new();
+        for c in self.to_guess_str() {
+            char_set.insert(c);
+            let freq = STATIC_WORDLE_FREQUENCY_TABLE[(c - b'a') as usize];
+            score *= u64::from(freq);
+        }
+        // add distinct letters
+        score + u64::pow(26, 5) * char_set.len() as u64
+    }
+
+    #[must_use]
+    pub fn index(self, i: usize) -> u8 {
+        assert!(i < 5, "Index out of bounds");
+        let result: u32 = (self.0 / (u32::pow(26, i.try_into().unwrap()))) % 26;
+        result
+            .try_into()
+            .expect("Result modulo 26 must fit into u8")
+    }
+
+    #[must_use]
+    pub fn to_guess_str(self) -> [u8; WORDLE_WORD_LEN] {
+        let mut res = [0; WORDLE_WORD_LEN];
+        res[0] = self.index(4);
+        res[1] = self.index(3);
+        res[2] = self.index(2);
+        res[3] = self.index(1);
+        res[4] = self.index(0);
+        res
+    }
+
+    #[must_use]
+    pub fn check_against(self, solution: Self) -> Guess {
+        let mut result: Guess = [GuessCharType::NotContained(255); WORDLE_WORD_LEN];
+        // Used is a array of booleans, which signify if a letter has been 'used' in the wrong place
+        // e.g. if the guess is COLOR and the solution word is AROSE, we want to mark the first O as 'wrong'
+        // and the second O as notContained.
+        let mut used = [false; WORDLE_WORD_LEN];
+        let guess_str = self.to_guess_str();
+        let solution_str = solution.to_guess_str();
+
+        for (i, c) in guess_str.into_iter().enumerate() {
+            if c == solution_str[i] {
+                result[i] = GuessCharType::Correct(c);
+                used[i] = true;
+            }
+        }
+
+        'guess_loop: for (i, c) in guess_str.into_iter().enumerate() {
+            if c != solution_str[i] {
+                // check if the char exists
+                for (j, sol_c) in solution_str.into_iter().enumerate() {
+                    if sol_c == c && !used[j] {
+                        result[i] = GuessCharType::Wrong(c);
+                        used[j] = true;
+                        continue 'guess_loop;
+                    }
+                }
+                result[i] = GuessCharType::NotContained(c);
+            }
+        }
+        result
+    }
+}
+/* impl IntoIterator for WordleWord {
+    type Item = u8;
+    type IntoIter = WordleWordIter;
+    fn into_iter(self) -> Self::IntoIter {
+        WordleWordIter {
+            word: self,
+            i: i32::from(WORDLE_WORD_LEN - 1),
+        }
+    }
+} */
+impl TryFrom<&str> for WordleWord {
+    type Error = &'static str;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        if value.len() != 5 {
+            return Err("Not five letters");
+        }
+        let mut x: u32 = 0;
+        for c in value.bytes() {
+            if !(65..=90).contains(&c) {
+                return Err("Not a lowercase letter");
+            }
+            x = (x * 26) + u32::from(c - b'a');
+        }
+        Ok(WordleWord(x))
+    }
+}
+
+/* pub struct WordleWordIter {
+    word: WordleWord,
+    i: i32,
+}
+impl Iterator for WordleWordIter {
+    type Item = u8;
+    fn next(&mut self) -> Option<Self::Item> {
+        let i = self.i;
+        if i >= 0 {
+            // Convert self.word into a base 26 number, and extract out the portion of power i
+            let result: u32 = (self.word.0 / (u32::pow(26, i.try_into().unwrap()))) % 26;
+            let result: u8 = result.try_into().expect("Result module 26 must fit into u8");
+            self.i -= 1;
+            Some(result + b'a')
+        } else { None }
+    }
+} */
+
 type PositionMap<T> = HashMap<u8, T>;
 
 /// Maps a guess type --> char
+#[derive(Copy, Clone)]
 pub enum GuessCharType {
     NotContained(u8),
     Wrong(u8),
@@ -30,8 +154,8 @@ pub type Guess = [GuessCharType; WORDLE_WORD_LEN];
 #[derive(Clone)]
 pub enum CharInformation {
     NotContained,
-    Min(i32),
-    Exactly(i32),
+    Min(u32),
+    Exactly(u32),
 }
 
 pub struct KnownCharInformation(HashMap<u8, CharInformation>);
@@ -83,6 +207,32 @@ impl KnownCharInformation {
                 self.0.insert(*c, char_info.clone());
             }
         }
+    }
+
+    #[must_use]
+    pub fn is_subset_of(&self, other: &HashMap<u8, u32>) -> bool {
+        use CharInformation::*;
+        for (c, char_info) in &self.0 {
+            let count: u32 = *other.get(c).unwrap_or(&0);
+            match char_info {
+                NotContained => {
+                    if count > 0 {
+                        return false;
+                    }
+                }
+                Min(v) => {
+                    if count < *v {
+                        return false;
+                    }
+                }
+                Exactly(v) => {
+                    if count != *v {
+                        return false;
+                    }
+                }
+            }
+        }
+        true
     }
 }
 
@@ -158,6 +308,31 @@ pub fn compile_guesses(guesses: &[Guess]) -> CompileGuessResult {
     }
 }
 
+fn is_valid_word(word: WordleWord, guesses: &CompileGuessResult) -> bool {
+    let mut char_count_table = HashMap::<u8, u32>::new();
+    for (i, c) in word.to_guess_str().into_iter().enumerate() {
+        let i: u8 = i.try_into().unwrap(); // populate char count table
+        *char_count_table.entry(i).or_insert(0) += 1;
+
+        if let Some(correct_char) = guesses.correct.get(&i) {
+            if *correct_char == c {
+                continue;
+            }
+            return false;
+        }
+        if let Some(wrong_chars) = guesses.wrong.get(&i) {
+            if wrong_chars.contains(&c) {
+                return false;
+            }
+        }
+    }
+    guesses
+        .known_char_information
+        .is_subset_of(&char_count_table)
+}
+
+/// ------ helpers -------
+
 fn add_to_set(s: &mut PositionMap<HashSet<u8>>, i: u8, c: u8) {
     if let Some(char_set) = s.get_mut(&i) {
         char_set.insert(c);
@@ -165,5 +340,15 @@ fn add_to_set(s: &mut PositionMap<HashSet<u8>>, i: u8, c: u8) {
         let mut st = HashSet::new();
         st.insert(c);
         s.insert(i, st);
+    }
+}
+
+/// ------------ Tests --------------
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn wordle_iterator() {
+        assert_eq!(2 + 2, 4);
     }
 }
