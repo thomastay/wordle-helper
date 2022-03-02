@@ -8,6 +8,7 @@
     "analyze:failures": "node ./dist/index.test.js startingWord --json > dist/failure-analysis.json",
     "build": "go build -o bin/ cmd/build_template && esbuild --minify --bundle --outdir=dist/ src/index.js src/index.css && ./bin/build_template.exe src/template.html dist/index.js dist/index.css dist/index.html",
     "check": "tsc",
+    "configure": "node ./tools/configure.js dist/index.html",
     "format": "prettier --write src/*.js src/*.ts src/*.html tools/*.js",
     "format:ci": "prettier --check src/*.js src/*.ts src/*.html tools/*.js",
     "ninja": "ninja",
