@@ -18,7 +18,9 @@ func main() {
 	templateFilename := os.Args[1]
 	jsFilename := os.Args[2]
 	cssFilename := os.Args[3]
-	outFilename := os.Args[4]
+	suggestionHTMLFilename := os.Args[4]
+	afterSuggestionsFilename := os.Args[5]
+	outFilename := os.Args[6]
 
 	replaceMap := make(map[string][]byte, 2)
 	minifiedJS, err := os.ReadFile(jsFilename)
@@ -28,6 +30,14 @@ func main() {
 	minifiedCSS, err := os.ReadFile(cssFilename)
 	check(err)
 	replaceMap["<% CSS %>"] = bytes.TrimSpace(minifiedCSS)
+
+	suggestionHTML, err := os.ReadFile(suggestionHTMLFilename)
+	check(err)
+	replaceMap["<% SUGGESTIONS %>"] = bytes.TrimSpace(suggestionHTML)
+
+	afterSuggestions, err := os.ReadFile(afterSuggestionsFilename)
+	check(err)
+	replaceMap["<% AFTER_SUGGESTIONS %>"] = bytes.TrimSpace(afterSuggestions)
 
 	templateFile, err := os.Open(templateFilename)
 	check(err)

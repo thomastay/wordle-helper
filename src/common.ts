@@ -60,6 +60,8 @@ export function unreachable() {
   throw new Error("unreachable");
 }
 
+export const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
+
 /// types
 //
 
