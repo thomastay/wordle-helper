@@ -15,7 +15,8 @@ function isYarn() {
 const outFile = process.argv[2];
 const isWindows = process.platform === "win32";
 const platformExt = isWindows ? ".exe" : "";
-const esbuildBinary = isWindows || isYarn() ? "node ./node_modules/esbuild/bin/esbuild" : "./node_modules/esbuild/bin/esbuild"
+const esbuildBinary =
+  isWindows || isYarn() ? "node ./node_modules/esbuild/bin/esbuild" : "./node_modules/esbuild/bin/esbuild";
 const ninjaTemplate = `\
 wordleOut = ${outFile}
 minifyOpts = --minify
