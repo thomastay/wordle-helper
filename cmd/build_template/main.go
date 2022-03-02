@@ -39,6 +39,8 @@ func main() {
 	check(err)
 	replaceMap["<% AFTER_SUGGESTIONS %>"] = bytes.TrimSpace(afterSuggestions)
 
+	replaceMap["<% \\n %>"] = []byte("\n")
+
 	templateFile, err := os.Open(templateFilename)
 	check(err)
 	defer templateFile.Close()
