@@ -1,5 +1,5 @@
 wordleOut = ../../../Documents/website/wordle-helper/index.html
-minifyOpts = --bundle --minify
+minifyOpts = --minify
 src = src
 dist = dist
 bin = bin
@@ -13,7 +13,7 @@ rule buildTemplate
     command = $bin/build_template.exe $in $out
 
 rule esbuild
-    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $in --outfile=$out
+    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts --bundle $in --outfile=$out
 
 rule gobuilddir
     command = go build -o $bin/ $relative/$in
@@ -24,12 +24,12 @@ build $dist/index.css: esbuild $src/index.css
 
 build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts $src/common-dom.ts
 
-build $dist/make-suggestion-nodes.cjs: esbuild $tools/make-suggestion-nodes.js | $src/common.ts $src/filter-guesses.ts $src/common-dom.ts
-  minifyOpts = --bundle --platform=node
+build $dist/make-suggestion-nodes.cjs: esbuild $tools/make-suggestion-nodes.js | $src/common.ts $src/filter-guesses.ts $src/common-dom.ts $src/compile-guesses.ts
+  minifyOpts = --platform=node
 
 build $dist/suggestions.txt $dist/afterSuggestions.txt: nodeRun $dist/make-suggestion-nodes.cjs
 
 build $dist/index.test.js: esbuild $src/index.test.ts | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts
-  minifyOpts = --bundle
+  minifyOpts = --platform=node
 
 build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build_template.exe

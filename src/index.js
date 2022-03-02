@@ -146,4 +146,4 @@ window.update = isFirstLoad => {
   }
   suggestionsRootElement.replaceChildren(...suggestionsNodes);
 };
-window.onload = update;
+window.onload = () => update(true);
