@@ -1,6 +1,7 @@
 "use strict";
 import solutionWords from "./solutionWords.json";
-import { GuessType, isAlpha, incCountTable } from "./common";
+import { GuessType, isAlpha, incCountTable, NERDY_DECIMAL_LEN } from "./common";
+import { makeSuggestionNode, makeDOMElt, makeParagraph, NUM_SUGGESTIONS } from "./common-dom";
 import {
   compileGuesses,
   isKnownCharInformationSubset,
@@ -50,13 +51,17 @@ window.demo = (demoStr1, demoStr2) => {
   window.update();
 };
 
-window.update = () => {
+window.update = isFirstLoad => {
   const updateStartTime = performance.now();
   const guesses = [];
   for (let i = 1; i <= 6; i++) {
     // Clean out errors
     document.getElementById(`error${i}`).innerHTML = "";
     guesses.push(document.getElementById(`input${i}`).value);
+  }
+  if (isFirstLoad && guesses.every(g => !g)) {
+    // empty first load, no need to continue;
+    return;
   }
   // The guess is parsed into a pair of (char, GuessType)
   // -------- Parse guesses -----------------
@@ -112,7 +117,7 @@ window.update = () => {
     wrong,
     knownCharInformation,
     solutionWords,
-    200,
+    NUM_SUGGESTIONS,
   );
 
   // -------- Sort and display it to the screen -----------
@@ -124,18 +129,7 @@ window.update = () => {
       if (score > maxScore) maxScore = score;
     }
   }
-
-  const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
-  const suggestionsNodes = suggestions.map(suggestionText => {
-    const n = document.createElement("li");
-    if (showStats) {
-      n.innerHTML = `${suggestionText} (${(calcScore(suggestionText) / maxScore).toFixed(NERDY_DECIMAL_LEN)})`;
-    } else {
-      n.innerHTML = suggestionText;
-    }
-
-    return n;
-  });
+  const suggestionsNodes = suggestions.map(s => makeSuggestionNode(s, showStats, maxScore));
   if (numFilteredTotal > suggestions.length) {
     afterSuggestionsElement.append(`(${suggestions.length} out of ${numFilteredTotal} words shown)`);
   }
@@ -152,14 +146,4 @@ window.update = () => {
   }
   suggestionsRootElement.replaceChildren(...suggestionsNodes);
 };
-
-/// DOM operations
-function makeDOMElt(type, text) {
-  const node = document.createElement(type);
-  node.innerHTML = text;
-  return node;
-}
-function makeParagraph(text) {
-  return makeDOMElt("p", text);
-}
 window.onload = update;

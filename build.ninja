@@ -4,12 +4,16 @@ src = src
 dist = dist
 bin = bin
 relative = .
+tools = tools
+
+rule nodeRun
+    command = node $in $out
 
 rule buildTemplate
     command = $bin/build_template.exe $in $out
 
 rule esbuild
-    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $in --outdir=$dist
+    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts $in --outfile=$out
 
 rule gobuilddir
     command = go build -o $bin/ $relative/$in
@@ -18,9 +22,14 @@ build $bin/build_template.exe: gobuilddir cmd/build_template
 
 build $dist/index.css: esbuild $src/index.css
 
-build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts
+build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts $src/common-dom.ts
+
+build $dist/make-suggestion-nodes.cjs: esbuild $tools/make-suggestion-nodes.js | $src/common.ts $src/filter-guesses.ts $src/common-dom.ts
+  minifyOpts = --bundle --platform=node
+
+build $dist/suggestions.txt $dist/afterSuggestions.txt: nodeRun $dist/make-suggestion-nodes.cjs
 
 build $dist/index.test.js: esbuild $src/index.test.ts | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts
   minifyOpts = --bundle
 
-build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css | $bin/build_template.exe
+build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build_template.exe
