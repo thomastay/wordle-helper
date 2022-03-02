@@ -1,9 +1,21 @@
 import { writeFileSync } from "node:fs";
 
+/** Taken from esbuild's node-install.ts
+ *  https://github.com/evanw/esbuild/blob/master/lib/npm/node-install.ts
+ */
+function isYarn() {
+  const { npm_config_user_agent } = process.env;
+  if (npm_config_user_agent) {
+    return /\byarn\//.test(npm_config_user_agent);
+  }
+  return false;
+}
+
 // argv[0] == node, argv[1] == __filename__
 const outFile = process.argv[2];
 const isWindows = process.platform === "win32";
 const platformExt = isWindows ? ".exe" : "";
+const esbuildBinary = isWindows || isYarn() ? "node ./node_modules/esbuild/bin/esbuild" : "./node_modules/esbuild/bin/esbuild"
 const ninjaTemplate = `\
 wordleOut = ${outFile}
 minifyOpts = --minify
@@ -20,7 +32,7 @@ rule buildTemplate
     command = $bin/build_template${platformExt} $in $out
 
 rule esbuild
-    command = node ./node_modules/esbuild/bin/esbuild $minifyOpts --bundle $in --outfile=$out
+    command = ${esbuildBinary} $minifyOpts --bundle $in --outfile=$out
 
 rule gobuilddir
     command = go build -o $bin/ $relative/$in
