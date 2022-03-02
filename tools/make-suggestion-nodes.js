@@ -3,6 +3,8 @@ import { sortSuggestions } from "../src/filter-guesses";
 import solutionWords from "../src/solutionWords.json";
 import { writeFileSync } from "node:fs";
 
+// argv[0] == "node"
+// argv[1] == __FILENAME__
 const suggestionsFilename = process.argv[2];
 const afterSuggestionsFilename = process.argv[3];
 
