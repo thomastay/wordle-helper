@@ -1,9 +1,8 @@
 import { writeFileSync } from "node:fs";
 
-
 // argv[0] == node, argv[1] == __filename__
-const outFile = process.argv[2]
-const isWindows = process.platform === "win32"
+const outFile = process.argv[2];
+const isWindows = process.platform === "win32";
 const platformExt = isWindows ? ".exe" : "";
 const ninjaTemplate = `\
 wordleOut = ${outFile}
