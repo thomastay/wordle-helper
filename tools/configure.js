@@ -26,6 +26,7 @@ bin = bin
 out = out
 relative = .
 tools = tools
+goLinkFlags = -ldflags="-s -w"
 
 rule nodeRun
     command = node $in $out
@@ -40,7 +41,7 @@ rule esbuild
     command = ${esbuildBinary} $minifyOpts --bundle $in --outfile=$out
 
 rule gobuilddir
-    command = go build -o $bin/ $relative/$in
+    command = go build -o $bin/ $goLinkFlags $relative/$in
 
 build $bin/build${platformExt}: gobuilddir cmd/build
 
