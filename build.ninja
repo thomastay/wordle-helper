@@ -3,6 +3,7 @@ minifyOpts = --minify
 src = src
 dist = dist
 bin = bin
+out = out
 relative = .
 tools = tools
 
@@ -10,7 +11,10 @@ rule nodeRun
     command = node $in $out
 
 rule buildTemplate
-    command = $bin/build_template.exe $in $out
+    command = $bin/build.exe template $in $out
+
+rule calcBundleSize
+    command = $bin/build.exe calcBundleSize $in $out
 
 rule esbuild
     command = node ./node_modules/esbuild/bin/esbuild $minifyOpts --bundle $in --outfile=$out
@@ -18,7 +22,7 @@ rule esbuild
 rule gobuilddir
     command = go build -o $bin/ $relative/$in
 
-build $bin/build_template.exe: gobuilddir cmd/build_template
+build $bin/build.exe: gobuilddir cmd/build
 
 build $dist/index.css: esbuild $src/index.css
 
@@ -32,4 +36,6 @@ build $dist/suggestions.txt $dist/afterSuggestions.txt: nodeRun $dist/make-sugge
 build $dist/index.test.js: esbuild $src/index.test.ts | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts
   minifyOpts = --platform=node
 
-build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build_template.exe
+build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build.exe
+
+build $out/bundle-size.json: calcBundleSize $wordleOut

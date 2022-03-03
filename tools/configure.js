@@ -23,6 +23,7 @@ minifyOpts = --minify
 src = src
 dist = dist
 bin = bin
+out = out
 relative = .
 tools = tools
 
@@ -30,7 +31,10 @@ rule nodeRun
     command = node $in $out
 
 rule buildTemplate
-    command = $bin/build_template${platformExt} $in $out
+    command = $bin/build${platformExt} template $in $out
+
+rule calcBundleSize
+    command = $bin/build${platformExt} calcBundleSize $in $out
 
 rule esbuild
     command = ${esbuildBinary} $minifyOpts --bundle $in --outfile=$out
@@ -38,7 +42,7 @@ rule esbuild
 rule gobuilddir
     command = go build -o $bin/ $relative/$in
 
-build $bin/build_template${platformExt}: gobuilddir cmd/build_template
+build $bin/build${platformExt}: gobuilddir cmd/build
 
 build $dist/index.css: esbuild $src/index.css
 
@@ -52,6 +56,8 @@ build $dist/suggestions.txt $dist/afterSuggestions.txt: nodeRun $dist/make-sugge
 build $dist/index.test.js: esbuild $src/index.test.ts | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts
   minifyOpts = --platform=node
 
-build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build_template${platformExt}
+build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build${platformExt}
+
+build $out/bundle-size.json: calcBundleSize $wordleOut
 `;
 writeFileSync("./build.ninja", ninjaTemplate);
