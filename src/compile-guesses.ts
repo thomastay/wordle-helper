@@ -21,119 +21,107 @@ export function compileGuesses(
   const wrong: PositionMap<Set<string>> = new Map();
   /** List of errors for each guess. Empty string if no errors */
   const errors: string[] = [];
+  const knownCharInformation: KnownCharInformation = new Map();
 
-  const knownCharInformation = guesses.reduce(
-    // kci --> known char information
-    (kci, g) => compileGuess(correct, wrong, errors, kci, g),
-    /** Map of char to CharInformation */
-    new Map(),
-  );
-  return [correct, wrong, knownCharInformation, errors];
-}
-
-/**
- * Modifies the correct, wrong, and knownCharInformation tables
- * @param guess {[char, number]} Guess is parsed into a pair of (char, GuessType)
- */
-function compileGuess(
-  correct: PositionMap<string>,
-  wrong: PositionMap<Set<string>>,
-  errors: string[],
-  knownCharInformation: KnownCharInformation,
-  guess: Guess,
-): KnownCharInformation {
-  let errorStr = "";
-  const guessKnownCharInformation: KnownCharInformation = new Map();
-  guess.forEach(([c, gType], pos) => {
-    switch (gType) {
-      case GuessType.correct:
-        let prevCorr: string | undefined;
-        if ((prevCorr = correct.get(pos)) && prevCorr !== c) {
-          errorStr += `Correct letter ${c} in position ${pos + 1} conflicts with previous correct letter ${correct.get(
-            pos,
-          )}. Overwriting. `;
-        }
-        let currWrong: Set<string> | undefined;
-        if ((currWrong = wrong.get(pos)) && currWrong.has(c)) {
-          errorStr += `Correct letter ${c} in position ${pos + 1} conflicts with previous wrong letter. Overwriting. `;
-          currWrong.delete(c);
-        }
-        if (isNotContained(c, knownCharInformation)) {
-          errorStr += `Correct letter ${c} in position ${
-            pos + 1
-          } conflicts with fact that it is not contained previously. Overwriting. `;
-          knownCharInformation.delete(c);
-        }
-        correct.set(pos, c);
-        incKnownCharInformation(c, guessKnownCharInformation);
-        break;
-      case GuessType.wrong:
-        if (correct.has(pos)) {
-          errorStr += `Wrong letter ${c} in position ${pos + 1} conflicts with previous correct letter ${correct.get(
-            pos,
-          )}. Overwriting. `;
-          correct.delete(pos);
-        }
-        if (isNotContained(c, knownCharInformation)) {
-          errorStr += `Wrong letter ${c} in position ${
-            pos + 1
-          } conflicts with fact that it is not contained previously. Overwriting. `;
-          knownCharInformation.delete(c);
-        }
-        incSetTable(wrong, pos, c);
-        incKnownCharInformation(c, guessKnownCharInformation);
-        break;
-      case GuessType.notContained:
-        // Do nothing, will do it only after correct and wrong has been
-        // processed
-        break;
-      default:
-        unreachable();
-    }
-  }); // end guessForeach
-
-  // Now, process the not contained characters
-  guess.forEach(([c, gType], pos) => {
-    switch (gType) {
-      case GuessType.correct:
-      case GuessType.wrong:
-        break;
-      case GuessType.notContained:
-        incSetTable(wrong, pos, c); // not contained word is wrong
-        if (correct.has(pos)) {
-          errorStr += `Not contained letter ${c} in position ${
-            pos + 1
-          } conflicts with previous correct letter ${correct.get(pos)}. Ignoring. `;
-        }
-        const ci = guessKnownCharInformation.get(c);
-        switch (ci?.type) {
-          case undefined:
-            guessKnownCharInformation.set(c, {
-              type: CharInformationType.notContained,
-            });
-          case CharInformationType.notContained:
-          case CharInformationType.exactly:
-            break; // noop
-          case CharInformationType.min: {
-            guessKnownCharInformation.set(c, {
-              type: CharInformationType.exactly,
-              val: ci.val,
-            });
-            break;
+  for (const guess of guesses) {
+    /**
+     * Compile each guess.
+     * Modifies the correct, wrong, and knownCharInformation tables
+     * @param guess {[char, number]} Guess is parsed into a pair of (char, GuessType)
+     */
+    let errorStr = "";
+    const guessKnownCharInformation: KnownCharInformation = new Map();
+    guess.forEach(([c, gType], pos) => {
+      switch (gType) {
+        case GuessType.correct:
+          let prevCorr: string | undefined;
+          if ((prevCorr = correct.get(pos)) && prevCorr !== c) {
+            errorStr += `Correct letter ${c} in position ${pos + 1} conflicts with previous correct letter ${correct.get(
+              pos,
+            )}. Overwriting. `;
           }
-          default:
-            unreachable();
-        }
-        break;
-      default:
-        unreachable();
-    }
-  }); // end guessForeach
+          let currWrong: Set<string> | undefined;
+          if ((currWrong = wrong.get(pos)) && currWrong.has(c)) {
+            errorStr += `Correct letter ${c} in position ${pos + 1} conflicts with previous wrong letter. Overwriting. `;
+            currWrong.delete(c);
+          }
+          if (isNotContained(c, knownCharInformation)) {
+            errorStr += `Correct letter ${c} in position ${
+              pos + 1
+            } conflicts with fact that it is not contained previously. Overwriting. `;
+            knownCharInformation.delete(c);
+          }
+          correct.set(pos, c);
+          incKnownCharInformation(c, guessKnownCharInformation);
+          break;
+        case GuessType.wrong:
+          if (correct.has(pos)) {
+            errorStr += `Wrong letter ${c} in position ${pos + 1} conflicts with previous correct letter ${correct.get(
+              pos,
+            )}. Overwriting. `;
+            correct.delete(pos);
+          }
+          if (isNotContained(c, knownCharInformation)) {
+            errorStr += `Wrong letter ${c} in position ${
+              pos + 1
+            } conflicts with fact that it is not contained previously. Overwriting. `;
+            knownCharInformation.delete(c);
+          }
+          incSetTable(wrong, pos, c);
+          incKnownCharInformation(c, guessKnownCharInformation);
+          break;
+        case GuessType.notContained:
+          // Do nothing, will do it only after correct and wrong has been
+          // processed
+          break;
+        default:
+          unreachable();
+      }
+    }); // end guessForeach
 
-  const mergeErrStr = mergeKnownCharInformation(knownCharInformation, guessKnownCharInformation);
-  if (mergeErrStr) errorStr += mergeErrStr;
-  errors.push(errorStr);
-  return knownCharInformation;
+    // Now, process the not contained characters
+    guess.forEach(([c, gType], pos) => {
+      switch (gType) {
+        case GuessType.correct:
+        case GuessType.wrong:
+          break;
+        case GuessType.notContained:
+          incSetTable(wrong, pos, c); // not contained word is wrong
+          if (correct.has(pos)) {
+            errorStr += `Not contained letter ${c} in position ${
+              pos + 1
+            } conflicts with previous correct letter ${correct.get(pos)}. Ignoring. `;
+          }
+          const ci = guessKnownCharInformation.get(c);
+          switch (ci?.type) {
+            case undefined:
+              guessKnownCharInformation.set(c, {
+                type: CharInformationType.notContained,
+              });
+            case CharInformationType.notContained:
+            case CharInformationType.exactly:
+              break; // noop
+            case CharInformationType.min: {
+              guessKnownCharInformation.set(c, {
+                type: CharInformationType.exactly,
+                val: ci.val,
+              });
+              break;
+            }
+            default:
+              unreachable();
+          }
+          break;
+        default:
+          unreachable();
+      }
+    }); // end guessForeach
+
+    const mergeErrStr = mergeKnownCharInformation(knownCharInformation, guessKnownCharInformation);
+    if (mergeErrStr) errorStr += mergeErrStr;
+    errors.push(errorStr);
+  }
+  return [correct, wrong, knownCharInformation, errors];
 }
 
 function isNotContained(c: string, knownCharInformation: KnownCharInformation) {
