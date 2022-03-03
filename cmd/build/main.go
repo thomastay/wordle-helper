@@ -115,4 +115,3 @@ func CalcBundleSize() {
 	toWrite := fmt.Sprintf(`{ "minified": %d, "parsed": %d }`, gzippedSize, parsedSize)
 	outWriter.WriteString(toWrite)
 }
-
