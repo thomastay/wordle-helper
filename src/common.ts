@@ -4,6 +4,7 @@
 export function assert(ok: boolean, message: string) {
   if (!ok) throw new Error(message);
 }
+
 export function isAlpha(str: string) {
   var code, i, len;
 

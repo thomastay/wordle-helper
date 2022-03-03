@@ -131,7 +131,7 @@ window.update = isFirstLoad => {
   }
   const suggestionsNodes = suggestions.map(s => makeSuggestionNode(s, showStats, maxScore));
   if (numFilteredTotal > suggestions.length) {
-    afterSuggestionsElement.append(`(${suggestions.length} out of ${numFilteredTotal} words shown)`);
+    afterSuggestionsElement.append(makeParagraph(`(${suggestions.length} out of ${numFilteredTotal} words shown)`));
   }
   if (showStats) {
     const updateTime = performance.now() - updateStartTime;
