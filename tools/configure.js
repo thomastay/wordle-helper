@@ -40,6 +40,9 @@ rule calcBundleSize
 rule esbuild
     command = ${esbuildBinary} $minifyOpts --bundle $in --outfile=$out
 
+rule terser
+    command = node ./node_modules/terser/bin/terser $in --compress --mangle -o $out
+
 rule gobuilddir
     command = go build -o $bin/ $goLinkFlags $relative/$in
 
@@ -47,7 +50,9 @@ build $bin/build${platformExt}: gobuilddir cmd/build
 
 build $dist/index.css: esbuild $src/index.css
 
-build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts $src/common-dom.ts
+build $dist/index-esbuild.js: esbuild $src/index.js | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts $src/common-dom.ts
+
+build $dist/index.js: terser $dist/index-esbuild.js
 
 build $dist/make-suggestion-nodes.cjs: esbuild $tools/make-suggestion-nodes.js | $src/common.ts $src/filter-guesses.ts $src/common-dom.ts $src/compile-guesses.ts
   minifyOpts = --platform=node
