@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"log"
 	"os"
 	"strings"
 )
@@ -64,12 +63,8 @@ func main() {
 			// This is a line comment
 			continue
 		}
-		// These are valid starting lines that my ad hoc templater can handle
-		if !strings.HasPrefix(currLine, "<") && !strings.HasPrefix(currLine, "/>") {
-			log.Printf("Warning: this templater is very dumb at stripping newlines and may have issues with this line. Adding a newline to be safe.\n Offending line: %s\n", currLine)
-			outWriter.WriteString("\n")
-		}
 		outWriter.WriteString(currLine)
+		outWriter.WriteString("\n")
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)

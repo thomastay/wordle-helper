@@ -13,7 +13,8 @@ export function makeSuggestionNode(suggestion: string, showStats: boolean, maxSc
 
 // keep in sync with makeSuggestionNode above
 export function makeSuggestionNodeHTML(suggestion: string): string {
-  return `<li>${suggestion}</li>`;
+  // <li> elements can be omitted if immediately followed by another <li> tag
+  return `<li>${suggestion}`;
 }
 
 export const NUM_SUGGESTIONS = 100;

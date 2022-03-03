@@ -47,7 +47,7 @@ window.demo = (demoStr1, demoStr2) => {
     document.getElementById(`input${i}`).value = "";
   }
   document.getElementById(`input1`).value = demoStr1;
-  if (demoStr2) document.getElementById(`input2`).value = demoStr2;
+  document.getElementById(`input2`).value = demoStr2;
   window.update();
 };
 

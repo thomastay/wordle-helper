@@ -3,7 +3,7 @@
  * with each solution word as the solution. It just uses the top suggestion.
  * The goal is to check that every word is reachable
  */
-import { assert, Guess, GuessType, PositionMap } from "./common";
+import { assert, Guess, GuessType, PositionMap, CountTable, incCountTable, mapToObj } from "./common";
 import { compileGuesses } from "./compile-guesses";
 import { filterGuesses, sortSuggestions } from "./filter-guesses";
 import solutionWords from "./solutionWords.json";
@@ -60,24 +60,16 @@ function guessToString(guess: Guess): string {
 
 type GuessStats = {
   guessWords: string[];
-  numSuggestions: number[];
 };
 
 function playWordle(startingWord: string, solutionWord: string): GuessStats {
   const guesses: Guess[] = [];
-  const numSuggestions: number[] = []; // TODO update stats
-  const logGuesses = () => {
-    console.log("Guesses:", guesses.map(guessToString));
-    console.log("Num Suggestions:", numSuggestions);
-  };
   let guessWord = startingWord; // nice initial guess
   while (true) {
     guesses.push(checkGuess(solutionWord, guessWord));
     if (guessWord === solutionWord) {
-      numSuggestions.push(1); // answer!
       return {
         guessWords: guesses.map(guessToString),
-        numSuggestions,
       };
     }
     const [correct, wrong, knownCharInformation, errors] = compileGuesses(guesses);
@@ -87,9 +79,7 @@ function playWordle(startingWord: string, solutionWord: string): GuessStats {
     );
     const suggestions = filterGuesses(correct, wrong, knownCharInformation, solutionWords);
     sortSuggestions(suggestions);
-    numSuggestions.push(suggestions.length);
     if (!suggestions.some(sugg => sugg === solutionWord)) {
-      logGuesses();
       console.log("Suggestions", suggestions);
       throw new Error("Solution word not found in suggestions");
     }
@@ -103,61 +93,29 @@ function playWordleAll(startingWord: string): void {
   }
 }
 
-function analyseStartingWords(outputJson: boolean): void {
-  const GOOD_THRESHOLD = 14;
+function analyseStartingWords(start: number, end: number): void {
   const allSolutions = solutionWords.slice(0); // don't alter the global
   sortSuggestions(allSolutions);
-  const startingWords = allSolutions;
-  let goodWords = [];
-  let bestWord = "";
-  let bestScore = 1000;
-  if (outputJson) {
-    console.log("{");
-  }
+  const startingWords = allSolutions.slice(start, end);
+  console.log("{");
   for (const startingWord of startingWords) {
-    // const countsOfNumGuesses: CountTable<number> = new Map();
-    let numWordsFailed = 0;
-    // const wordsFailed: [string, string[]][] = [];
+    const wordsFailed: CountTable<number> = new Map();
     for (const solutionWord of solutionWords) {
-      // console.log(`Playing ${solutionWord}`);
       const stats = playWordle(startingWord, solutionWord);
-      // incCountTable(countsOfNumGuesses, stats.guessWords.length);
-      if (stats.guessWords.length > 6) {
-        numWordsFailed++;
-        // wordsFailed.push([solutionWord, stats.guessWords]);
-      }
+      incCountTable(wordsFailed, stats.guessWords.length);
     }
-    // console.log(sortedCountTable(countsOfNumGuesses));
-    if (outputJson) {
-      console.log(`"${startingWord}": ${numWordsFailed}`);
-      console.error(`"${startingWord}": ${numWordsFailed}`);
-    } else {
-      if (bestScore > numWordsFailed) {
-        bestScore = numWordsFailed;
-        bestWord = startingWord;
-      }
-      if (numWordsFailed <= GOOD_THRESHOLD) {
-        goodWords.push(startingWord);
-      }
-      console.log(
-        `Starting with ${startingWord}.`,
-        "Words failed:",
-        numWordsFailed,
-        `- Best so far ${bestWord} (${bestScore})`,
-        "Good words so far:",
-        JSON.stringify(goodWords),
-      );
-    }
+    const wordsFailedStr = JSON.stringify(mapToObj(wordsFailed));
+    console.log(`"${startingWord}": ${wordsFailedStr},`);
+    console.error(`${start++} ${startingWord}: ${wordsFailedStr}`);
   }
-  if (outputJson) {
-    // No good way to output this on SIGINT, see https://github.com/nodejs/node/issues/9050
-    console.log("}");
-  }
+  // No good way to output this on SIGINT, see https://github.com/nodejs/node/issues/9050
+  console.log("}");
 }
 
 // TODO a better argv parser pls
-if (process.argv[2] === "startingWord") {
-  analyseStartingWords(process.argv[3] === "--json");
+const subCommand = process.argv[2];
+if (subCommand === "startingWord") {
+  analyseStartingWords(Number(process.argv[3]) || 0, Number(process.argv[4]) || solutionWords.length);
 } else {
   playWordleAll("plate");
 }

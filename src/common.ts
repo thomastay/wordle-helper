@@ -62,6 +62,14 @@ export function unreachable() {
 
 export const NERDY_DECIMAL_LEN = 4; // 4 decimal points makes it look super accurate
 
+export function mapToObj(m: Map<number, unknown>): object {
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of m) {
+    result[k] = v;
+  }
+  return result;
+}
+
 /// types
 //
 
