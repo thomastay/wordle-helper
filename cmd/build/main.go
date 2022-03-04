@@ -18,9 +18,7 @@ func check(e error) {
 func main() {
 	subCommand := os.Args[1]
 	if subCommand == "template" {
-		Template()
-	} else if subCommand == "calcBundleSize" {
-		CalcBundleSize()
+		template()
 	} else {
 		panic(fmt.Sprintf("Did not recognize subCommand %s", subCommand))
 	}
@@ -28,13 +26,18 @@ func main() {
 
 // Templating (the main behavior)
 
-func Template() {
+func template() {
+	// inputs ($in)
 	templateFilename := os.Args[2]
 	jsFilename := os.Args[3]
 	cssFilename := os.Args[4]
 	suggestionHTMLFilename := os.Args[5]
 	afterSuggestionsFilename := os.Args[6]
+	// output ($out)
 	outFilename := os.Args[7]
+	bundleSizeOutFilename := os.Args[8]
+
+	// ---- initialize arguments and parse files ----
 
 	replaceMap := make(map[string][]byte, 2)
 	minifiedJS, err := os.ReadFile(jsFilename)
@@ -57,11 +60,29 @@ func Template() {
 	check(err)
 	defer templateFile.Close()
 
+	// --- Create output files (the index.html output, and the bundle size out)
 	outFile, err := os.Create(outFilename)
 	check(err)
 	defer outFile.Close()
 	outWriter := bufio.NewWriter(outFile)
 	defer outWriter.Flush()
+	bundleSizeOutFile, err := os.Create(bundleSizeOutFilename)
+	check(err)
+	defer bundleSizeOutFile.Close()
+	bundleSizeOutWriter := bufio.NewWriter(bundleSizeOutFile)
+	defer bundleSizeOutWriter.Flush()
+
+	// code to calculate bundle size
+	parsedSize := 0
+	var gzipBuf bytes.Buffer
+	zw := gzip.NewWriter(&gzipBuf)
+
+	writeBoth := func(b []byte) {
+		parsedSize += len(b)
+		outWriter.Write(b)
+		_, err = zw.Write(b)
+		check(err)
+	}
 
 	scanner := bufio.NewScanner(templateFile)
 	for scanner.Scan() {
@@ -69,49 +90,26 @@ func Template() {
 		currLine = strings.TrimSpace(currLine)
 		if strings.HasPrefix(currLine, "<%") {
 			if replace, ok := replaceMap[currLine]; ok {
-				outWriter.Write(replace)
+				writeBoth(replace)
 				continue
 			} //fallthrough
 		} else if strings.HasPrefix(currLine, "<!--") {
 			// This is a line comment
 			continue
 		}
-		outWriter.WriteString(currLine)
-		outWriter.WriteString("\n")
+		writeBoth([]byte(currLine))
+		writeBoth([]byte("\n"))
 	}
-	if err := scanner.Err(); err != nil {
-		panic(err)
-	}
-}
-
-// calculating bundle sizes
-func CalcBundleSize() {
-	// args
-	htmlFilename := os.Args[2]
-	outFilename := os.Args[3]
-
-	parsedData, err := os.ReadFile(htmlFilename)
+	err = scanner.Err()
 	check(err)
 
-	outFile, err := os.Create(outFilename)
-	check(err)
-	defer outFile.Close()
-	outWriter := bufio.NewWriter(outFile)
-	defer outWriter.Flush()
-
-	parsedSize := len(parsedData)
-
-	var buf bytes.Buffer
-	zw := gzip.NewWriter(&buf)
-
-	_, err = zw.Write(parsedData)
-	check(err)
-
+	// Write to bundle-size.json
 	err = zw.Flush()
 	check(err)
 
-	gzippedSize := buf.Len()
+	gzippedSize := gzipBuf.Len()
 	// shitty version of json writer
 	toWrite := fmt.Sprintf(`{ "minified": %d, "parsed": %d }`, gzippedSize, parsedSize)
-	outWriter.WriteString(toWrite)
+	bundleSizeOutWriter.WriteString(toWrite)
+	bundleSizeOutWriter.WriteByte('\n')
 }

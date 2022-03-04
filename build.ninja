@@ -37,6 +37,4 @@ build $dist/suggestions.txt $dist/afterSuggestions.txt: nodeRun $dist/make-sugge
 build $dist/index.test.js: esbuild $src/index.test.ts | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts
   minifyOpts = --platform=node
 
-build $wordleOut: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build.exe
-
-build $out/bundle-size.json: calcBundleSize $wordleOut
+build $wordleOut $out/bundle-size.json: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build.exe
