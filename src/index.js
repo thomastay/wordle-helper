@@ -26,7 +26,9 @@ window.suggestStartingWord = () => {
   const suggestedStartingWordElement = document.getElementById("suggested-starting-word");
   suggestedStartingWordElement.innerHTML = "";
   suggestedStartingWordElement.appendChild(
-    makeDOMElt("p", `Try starting with: ${solutionWords[goodStartingWordsIndices[[currStartingWordIndex]]]}`),
+    makeParagraph(
+      `Try starting with: ${solutionWords[goodStartingWordsIndices[[currStartingWordIndex]]].toUpperCase()}`,
+    ),
   );
   currStartingWordIndex = (currStartingWordIndex + 1) % goodStartingWordsIndices.length;
 };

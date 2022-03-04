@@ -36,13 +36,15 @@ export function compileGuesses(
         case GuessType.correct:
           let prevCorr: string | undefined;
           if ((prevCorr = correct.get(pos)) && prevCorr !== c) {
-            errorStr += `Correct letter ${c} in position ${pos + 1} conflicts with previous correct letter ${correct.get(
-              pos,
-            )}. Overwriting. `;
+            errorStr += `Correct letter ${c} in position ${
+              pos + 1
+            } conflicts with previous correct letter ${correct.get(pos)}. Overwriting. `;
           }
           let currWrong: Set<string> | undefined;
           if ((currWrong = wrong.get(pos)) && currWrong.has(c)) {
-            errorStr += `Correct letter ${c} in position ${pos + 1} conflicts with previous wrong letter. Overwriting. `;
+            errorStr += `Correct letter ${c} in position ${
+              pos + 1
+            } conflicts with previous wrong letter. Overwriting. `;
             currWrong.delete(c);
           }
           if (isNotContained(c, knownCharInformation)) {

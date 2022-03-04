@@ -4,7 +4,7 @@
 }
 body {
   font-family: serif;
-  font-size: 16px;
+  font-size: 120%;
   margin: 0 auto;
   max-width: 66ch;
   padding: 1rem;
@@ -32,17 +32,18 @@ a:hover {
 input {
   padding: 10px 20px;
   margin: 2px 0;
-  font-size: 16px;
+  font-size: 130%;
   font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   text-transform: uppercase;
 }
 
 #suggested-starting-word {
-  font-size: 20px;
+  font-size: 150%;
 }
 button {
   margin: 4px 4px;
   padding: 12px 24px;
+  font-size: 90%;
 }
 
 /*
