@@ -86,18 +86,18 @@ func template() {
 
 	scanner := bufio.NewScanner(templateFile)
 	for scanner.Scan() {
-		currLine := scanner.Text()
-		currLine = strings.TrimSpace(currLine)
-		if strings.HasPrefix(currLine, "<%") {
-			if replace, ok := replaceMap[currLine]; ok {
+		l := scanner.Text()
+		l = strings.TrimSpace(l)
+		if strings.HasPrefix(l, "<%") {
+			if replace, ok := replaceMap[l]; ok {
 				writeBoth(replace)
 				continue
 			} //fallthrough
-		} else if strings.HasPrefix(currLine, "<!--") {
+		} else if strings.HasPrefix(l, "<!--") {
 			// This is a line comment
 			continue
 		}
-		writeBoth([]byte(currLine))
+		writeBoth([]byte(l))
 		writeBoth([]byte("\n"))
 	}
 	err = scanner.Err()
@@ -109,7 +109,11 @@ func template() {
 
 	gzippedSize := gzipBuf.Len()
 	// shitty version of json writer
-	toWrite := fmt.Sprintf(`{ "minified": %d, "parsed": %d }`, gzippedSize, parsedSize)
-	bundleSizeOutWriter.WriteString(toWrite)
+	bundleSizeOutWriter.WriteString(
+		fmt.Sprintf(
+			`{ "minified": %d, "parsed": %d }`,
+			gzippedSize, parsedSize,
+		),
+	)
 	bundleSizeOutWriter.WriteByte('\n')
 }
