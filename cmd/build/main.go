@@ -48,26 +48,30 @@ func template() {
 	addTemplateKey(templateData, afterSuggestionsFilename, "AFTER_SUGGESTIONS")
 
 	// --- Create output files and Writers (the index.html output, and the bundle size out)
-	outFile, err := os.Create(outFilename)
-	check(err)
-	defer outFile.Close()
-	outWriter := bufio.NewWriter(outFile)
-	defer outWriter.Flush()
-	bundleSizeOutFile, err := os.Create(bundleSizeOutFilename)
-	check(err)
-	defer bundleSizeOutFile.Close()
-	bundleSizeOutWriter := bufio.NewWriter(bundleSizeOutFile)
-	defer bundleSizeOutWriter.Flush()
+	var outWriter, bundleSizeOutWriter *bufio.Writer
+	{
+		// Reminder: these defers are in function scope
+		outFile, err := os.Create(outFilename)
+		check(err)
+		defer outFile.Close()
+		outWriter = bufio.NewWriter(outFile)
+		defer outWriter.Flush()
+
+		bundleSizeOutFile, err := os.Create(bundleSizeOutFilename)
+		check(err)
+		defer bundleSizeOutFile.Close()
+		bundleSizeOutWriter = bufio.NewWriter(bundleSizeOutFile)
+		defer bundleSizeOutWriter.Flush()
+	}
 
 	// code to calculate bundle size
 	parsedSize := 0
 	var gzipBuf bytes.Buffer
 	zw := gzip.NewWriter(&gzipBuf)
-
 	writeBoth := func(b []byte) {
 		parsedSize += len(b)
 		outWriter.Write(b)
-		_, err = zw.Write(b)
+		_, err := zw.Write(b)
 		check(err)
 	}
 
@@ -77,15 +81,14 @@ func template() {
 	defer templateFile.Close()
 	scanner := bufio.NewScanner(templateFile)
 	for scanner.Scan() {
-		l := scanner.Text()
-		l = strings.TrimSpace(l)
+		l := strings.TrimSpace(scanner.Text())
 		if strings.HasPrefix(l, "<%") {
 			if replace, ok := templateData[l]; ok {
 				writeBoth(replace)
 				continue
 			} //fallthrough
 		} else if strings.HasPrefix(l, "<!--") {
-			// This is a line comment
+			// This is a HTML line comment
 			continue
 		}
 		writeBoth([]byte(l))
