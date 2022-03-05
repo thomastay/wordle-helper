@@ -4,6 +4,10 @@ use wordle_helper::solution_words::SOLUTION_WORDS;
 fn main() {
     let starting_word = SOLUTION_WORDS[0];
     for word in SOLUTION_WORDS {
-        play_wordle(starting_word, word);
+        println!(
+            "Playing {} - num guesses {}",
+            word,
+            play_wordle(starting_word, word).num_guesses
+        );
     }
 }

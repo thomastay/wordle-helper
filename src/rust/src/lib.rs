@@ -16,21 +16,24 @@ use std::convert::TryFrom;
 use std::fmt;
 
 pub mod solution_words;
-use solution_words::SOLUTION_WORDS;
+mod tables;
+
+use tables::AsciiCountTable;
+use solution_words::{SOLUTION_WORDS, SOLUTION_WORDS_SCORE};
 
 const WORDLE_WORD_LEN: usize = 5;
 
 /// Precomputed letter frequency table of the entire solution data set
-const STATIC_WORDLE_FREQUENCY_TABLE: [u32; 26] = [
+/* const STATIC_WORDLE_FREQUENCY_TABLE: [u32; 26] = [
     807, 244, 388, 330, 938, 182, 257, 328, 572, 23, 183, 579, 262, 474, 600, 304, 28, 746, 552,
     596, 404, 135, 171, 33, 367, 31,
-];
+]; */
 
 /// We can represent each wordle word as a single 5 digit base 26 number
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct WordleWord(u32);
 impl WordleWord {
-    #[must_use]
+    /* #[must_use]
     pub fn score(self) -> u32 {
         // step1: each letter is static_table[i]
         // step2: the number of distinct letters is distinct * 26^5
@@ -43,7 +46,7 @@ impl WordleWord {
         }
         // add distinct letters
         score + u32::pow(26, 5) * char_set.len() as u32
-    }
+    } */
 
     /// Returns the char at index i
     /// # Panics
@@ -243,10 +246,10 @@ impl KnownCharInformation {
     }
 
     #[must_use]
-    pub fn is_subset_of(&self, other: &HashMap<u8, u32>) -> bool {
+    pub fn is_subset_of(&self, other: &AsciiCountTable) -> bool {
         use CharInformation::*;
         for (c, char_info) in &self.0 {
-            let count: u32 = *other.get(c).unwrap_or(&0);
+            let count: u32 = other.get(*c);
             match char_info {
                 NotContained => {
                     if count > 0 {
@@ -343,10 +346,10 @@ pub fn compile_guesses(guesses: &[Guess]) -> CompileGuessResult {
 }
 
 fn is_valid_word(word: WordleWord, guesses: &CompileGuessResult) -> bool {
-    let mut char_count_table = HashMap::<u8, u32>::new();
+    let mut char_count_table = AsciiCountTable::new();
     for (i, c) in word.to_guess_str().into_iter().enumerate() {
         let i: u8 = i.try_into().unwrap(); // populate char count table
-        *char_count_table.entry(c).or_insert(0) += 1;
+        char_count_table.inc(c);
 
         if let Some(correct_char) = guesses.correct.get(&i) {
             if *correct_char == c {
@@ -375,6 +378,7 @@ pub struct PlayStats {
 pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStats {
     let max_guesses = 12; // in case of infinite loop
     let mut guesses = Vec::new();
+    let mut suggestions: Vec<(usize, WordleWord)> = SOLUTION_WORDS.iter().copied().enumerate().collect();
     loop {
         guesses.push(guess_word.check_against(solution));
         if guess_word == solution || guesses.len() > max_guesses {
@@ -383,21 +387,18 @@ pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStat
             };
         }
         let compile_guesses_result = compile_guesses(&guesses);
-        let suggestions = SOLUTION_WORDS
-            .iter()
-            .copied()
-            .filter(|&w| is_valid_word(w, &compile_guesses_result))
-            .collect::<Vec<WordleWord>>();
+        suggestions.retain(|&(_, w)| is_valid_word(w, &compile_guesses_result));
         assert!(
-            suggestions.iter().any(|&w| w == solution),
+            suggestions.iter().any(|&(_, w)| w == solution),
             "solution word not found in suggestions {:?}",
             suggestions
         );
 
-        guess_word = suggestions
-            .into_iter()
-            .max_by_key(|w| w.score())
+        let (_, g) = *suggestions
+            .iter()
+            .max_by_key(|(i, _)| SOLUTION_WORDS_SCORE[*i])
             .expect("suggestions must be nonempty");
+        guess_word = g;
     }
 }
 
