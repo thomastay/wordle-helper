@@ -15,10 +15,11 @@ use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
 use std::fmt;
 
+#[rustfmt::skip]
 pub mod solution_words;
 mod tables;
 
-use tables::AsciiCountTable;
+use tables::{AsciiCountTable, PositionMapChar};
 use solution_words::{SOLUTION_WORDS, SOLUTION_WORDS_SCORE};
 
 const WORDLE_WORD_LEN: usize = 5;
@@ -280,14 +281,14 @@ impl Default for KnownCharInformation {
 
 #[derive(Debug)]
 pub struct CompileGuessResult {
-    correct: PositionMap<u8>,
+    correct: PositionMapChar,
     wrong: PositionMap<HashSet<u8>>,
     known_char_information: KnownCharInformation,
 }
 
 #[must_use]
 pub fn compile_guesses(guesses: &[Guess]) -> CompileGuessResult {
-    let mut correct = HashMap::new();
+    let mut correct = PositionMapChar::new();
     let mut wrong = HashMap::new();
     let mut known_char_information = KnownCharInformation::new();
 
@@ -351,8 +352,8 @@ fn is_valid_word(word: WordleWord, guesses: &CompileGuessResult) -> bool {
         let i: u8 = i.try_into().unwrap(); // populate char count table
         char_count_table.inc(c);
 
-        if let Some(correct_char) = guesses.correct.get(&i) {
-            if *correct_char == c {
+        if let Some(correct_char) = guesses.correct.get(i) {
+            if correct_char == c {
                 continue;
             }
             return false;
