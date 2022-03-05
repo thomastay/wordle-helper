@@ -41,7 +41,7 @@ rule esbuild
     command = ${esbuildBinary} $minifyOpts --bundle $in --outfile=$out
 
 rule terser
-    command = node ./node_modules/terser/bin/terser $in --compress --mangle -o $out
+    command = node ./node_modules/terser/bin/terser $in --compress unsafe,unsafe_arrows,passes=2 --mangle -o $out
 
 rule gobuilddir
     command = go build -o $bin/ $goLinkFlags $relative/$in
