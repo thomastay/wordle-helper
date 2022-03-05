@@ -109,9 +109,12 @@ func template() {
 
 	gzippedSize := gzipBuf.Len()
 	// shitty version of json writer
+	// see
+	// https://www.npmjs.com/package/webpack-bundle-analyzer#size-definitions
+	// for an explanation of what these mean
 	bundleSizeOutWriter.WriteString(
 		fmt.Sprintf(
-			`{ "minified": %d, "parsed": %d }`,
+			`{ "gzip": %d, "parsed": %d }`,
 			gzippedSize, parsedSize,
 		),
 	)
