@@ -13,6 +13,10 @@
 
 use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
+use std::fmt;
+
+pub mod solution_words;
+use solution_words::SOLUTION_WORDS;
 
 const WORDLE_WORD_LEN: usize = 5;
 
@@ -34,7 +38,7 @@ impl WordleWord {
         let mut char_set = HashSet::new();
         for c in self.to_guess_str() {
             char_set.insert(c);
-            let freq = STATIC_WORDLE_FREQUENCY_TABLE[(c - b'a') as usize];
+            let freq = STATIC_WORDLE_FREQUENCY_TABLE[c as usize];
             score *= freq;
         }
         // add distinct letters
@@ -125,6 +129,31 @@ impl TryFrom<&str> for WordleWord {
     }
 }
 
+const CHARCODE_LOWERCASE_A: u8 = 97;
+impl fmt::Display for WordleWord {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Write strictly the first element into the supplied output
+        // stream: `f`. Returns `fmt::Result` which indicates whether the
+        // operation succeeded or failed. Note that `write!` uses syntax which
+        // is very similar to `println!`.
+        write!(
+            f,
+            "{}{}{}{}{}",
+            (self.index(4) + CHARCODE_LOWERCASE_A) as char,
+            (self.index(3) + CHARCODE_LOWERCASE_A) as char,
+            (self.index(2) + CHARCODE_LOWERCASE_A) as char,
+            (self.index(1) + CHARCODE_LOWERCASE_A) as char,
+            (self.index(0) + CHARCODE_LOWERCASE_A) as char,
+        )
+    }
+}
+impl fmt::Debug for WordleWord {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // use the Display trait
+        write!(f, "{}", self)
+    }
+}
+
 /* pub struct WordleWordIter {
     word: WordleWord,
     i: i32,
@@ -146,7 +175,7 @@ impl Iterator for WordleWordIter {
 type PositionMap<T> = HashMap<u8, T>;
 
 /// Maps a guess type --> char
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum GuessCharType {
     NotContained(u8),
     Wrong(u8),
@@ -154,13 +183,14 @@ pub enum GuessCharType {
 }
 pub type Guess = [GuessCharType; WORDLE_WORD_LEN];
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum CharInformation {
     NotContained,
     Min(u32),
     Exactly(u32),
 }
 
+#[derive(Debug)]
 pub struct KnownCharInformation(HashMap<u8, CharInformation>);
 impl KnownCharInformation {
     #[must_use]
@@ -245,6 +275,7 @@ impl Default for KnownCharInformation {
     }
 }
 
+#[derive(Debug)]
 pub struct CompileGuessResult {
     correct: PositionMap<u8>,
     wrong: PositionMap<HashSet<u8>>,
@@ -257,14 +288,14 @@ pub fn compile_guesses(guesses: &[Guess]) -> CompileGuessResult {
     let mut wrong = HashMap::new();
     let mut known_char_information = KnownCharInformation::new();
 
-    for (pos, guess) in guesses.iter().enumerate() {
+    for guess in guesses {
         // Compile guess
-        let pos: u8 = pos.try_into().expect("Pos should be < 256");
         let mut guess_known_char_information = KnownCharInformation::new();
 
         // Round 1: process correct and wrong chars
-        for gct in guess {
+        for (pos, gct) in guess.iter().enumerate() {
             use GuessCharType::*;
+            let pos: u8 = pos.try_into().expect("Pos should be < 256");
             match *gct {
                 // TODO (angtay) deal with overlaps case
                 Correct(c) => {
@@ -315,7 +346,7 @@ fn is_valid_word(word: WordleWord, guesses: &CompileGuessResult) -> bool {
     let mut char_count_table = HashMap::<u8, u32>::new();
     for (i, c) in word.to_guess_str().into_iter().enumerate() {
         let i: u8 = i.try_into().unwrap(); // populate char count table
-        *char_count_table.entry(i).or_insert(0) += 1;
+        *char_count_table.entry(c).or_insert(0) += 1;
 
         if let Some(correct_char) = guesses.correct.get(&i) {
             if *correct_char == c {
@@ -334,15 +365,13 @@ fn is_valid_word(word: WordleWord, guesses: &CompileGuessResult) -> bool {
         .is_subset_of(&char_count_table)
 }
 
-const SOLUTION_WORDS: [WordleWord; 1] = [WordleWord(0)];
-
 pub struct PlayStats {
-    num_guesses: usize,
+    pub num_guesses: usize,
 }
 
 /// # Panics
 /// Panics if the solution word is not found in the suggestions
-#[must_use]
+// #[must_use]
 pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStats {
     let max_guesses = 12; // in case of infinite loop
     let mut guesses = Vec::new();
@@ -361,7 +390,8 @@ pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStat
             .collect::<Vec<WordleWord>>();
         assert!(
             suggestions.iter().any(|&w| w == solution),
-            "solution word not found in suggestions"
+            "solution word not found in suggestions {:?}",
+            suggestions
         );
 
         guess_word = suggestions
