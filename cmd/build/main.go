@@ -1,5 +1,8 @@
 package main
 
+// This build tools panics on any error, which is ok for a build tool but
+// probably not good for your production code.
+
 import (
 	"bufio"
 	"bytes"
@@ -24,8 +27,7 @@ func main() {
 	}
 }
 
-// Templating (the main behavior)
-
+/// Templating (the main behavior)
 func template() {
 	// inputs ($in)
 	templateFilename := os.Args[2]
@@ -39,28 +41,13 @@ func template() {
 
 	// ---- initialize arguments and parse files ----
 
-	replaceMap := make(map[string][]byte, 2)
-	minifiedJS, err := os.ReadFile(jsFilename)
-	check(err)
-	replaceMap["<% JS %>"] = bytes.TrimSpace(minifiedJS)
+	templateData := make(map[string][]byte, 4)
+	addTemplateKey(templateData, jsFilename, "JS")
+	addTemplateKey(templateData, cssFilename, "CSS")
+	addTemplateKey(templateData, suggestionHTMLFilename, "SUGGESTIONS")
+	addTemplateKey(templateData, afterSuggestionsFilename, "AFTER_SUGGESTIONS")
 
-	minifiedCSS, err := os.ReadFile(cssFilename)
-	check(err)
-	replaceMap["<% CSS %>"] = bytes.TrimSpace(minifiedCSS)
-
-	suggestionHTML, err := os.ReadFile(suggestionHTMLFilename)
-	check(err)
-	replaceMap["<% SUGGESTIONS %>"] = bytes.TrimSpace(suggestionHTML)
-
-	afterSuggestions, err := os.ReadFile(afterSuggestionsFilename)
-	check(err)
-	replaceMap["<% AFTER_SUGGESTIONS %>"] = bytes.TrimSpace(afterSuggestions)
-
-	templateFile, err := os.Open(templateFilename)
-	check(err)
-	defer templateFile.Close()
-
-	// --- Create output files (the index.html output, and the bundle size out)
+	// --- Create output files and Writers (the index.html output, and the bundle size out)
 	outFile, err := os.Create(outFilename)
 	check(err)
 	defer outFile.Close()
@@ -84,12 +71,16 @@ func template() {
 		check(err)
 	}
 
+	// Scan the template file line by line
+	templateFile, err := os.Open(templateFilename)
+	check(err)
+	defer templateFile.Close()
 	scanner := bufio.NewScanner(templateFile)
 	for scanner.Scan() {
 		l := scanner.Text()
 		l = strings.TrimSpace(l)
 		if strings.HasPrefix(l, "<%") {
-			if replace, ok := replaceMap[l]; ok {
+			if replace, ok := templateData[l]; ok {
 				writeBoth(replace)
 				continue
 			} //fallthrough
@@ -109,7 +100,6 @@ func template() {
 
 	gzippedSize := gzipBuf.Len()
 	// shitty version of json writer
-	// see
 	// https://www.npmjs.com/package/webpack-bundle-analyzer#size-definitions
 	// for an explanation of what these mean
 	bundleSizeOutWriter.WriteString(
@@ -119,4 +109,14 @@ func template() {
 		),
 	)
 	bundleSizeOutWriter.WriteByte('\n')
+}
+
+/// Given a key k, reads the bytes in filename from disk,
+/// and puts <% k %> as the key to the file data in the map.
+func addTemplateKey(m map[string][]byte, filename, k string) {
+	b, err := os.ReadFile(filename)
+	check(err)
+	// Note that the double % is to escape a single %
+	k = fmt.Sprintf("<%% %s %%>", k)
+	m[k] = bytes.TrimSpace(b)
 }
