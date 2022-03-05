@@ -14,23 +14,22 @@ import { sortAndFilterGuesses, calcScore } from "./filter-guesses";
 const params = new URLSearchParams(document.location.search);
 const showStats = params.get("showStats");
 
-// computed by tools/analyze-wordle.js, which in turns is using src/index.test.ts startingWord --json
-const goodStartingWordsIndices = [
-  1263, 1650, 1363, 1683, 1315, 1268, 1641, 361, 435, 1462, 674, 1635, 1294, 2031, 192, 1464, 1663, 1262, 185, 1470,
-  1458, 1206, 1640, 1755, 1209, 449, 552, 239, 445, 1744, 1269, 677, 144, 1986, 1307, 1658,
-];
-
-let currStartingWordIndex = Math.floor(Math.random() * goodStartingWordsIndices.length);
-
 window.suggestStartingWord = () => {
+  // computed by tools/analyze-wordle.js, which in turns is using src/index.test.ts startingWord --json
+  const goodStartingWordsIndices = [
+    1263, 1650, 1363, 1683, 1315, 1268, 1641, 361, 435, 1462, 674, 1635, 1294, 2031, 192, 1464, 1663, 1262, 185, 1470,
+    1458, 1206, 1640, 1755, 1209, 449, 552, 239, 445, 1744, 1269, 677, 144, 1986, 1307, 1658,
+  ];
+
+  const currStartingWordIndex = Math.floor(Math.random() * goodStartingWordsIndices.length);
   const suggestedStartingWordElement = document.getElementById("suggested-starting-word");
   suggestedStartingWordElement.innerHTML = "";
+  // suggestedStartingWordElement.appendChild(makeParagraph(`✨ Happy birthday honey! ❤️✨`));
   suggestedStartingWordElement.appendChild(
     makeParagraph(
       `Try starting with: ${solutionWords[goodStartingWordsIndices[[currStartingWordIndex]]].toUpperCase()}`,
     ),
   );
-  currStartingWordIndex = (currStartingWordIndex + 1) % goodStartingWordsIndices.length;
 };
 
 window.demo = (demoStr1, demoStr2) => {

@@ -21,6 +21,7 @@ h6 {
 ul li,
 ol li {
   margin-top: 0.5rem;
+  font-size: 110%;
 }
 a,
 a:visited {
@@ -33,6 +34,7 @@ input {
   padding: 10px 20px;
   margin: 2px 0;
   font-size: 130%;
+  width: 70%;
   font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   text-transform: uppercase;
 }
@@ -43,7 +45,7 @@ input {
 button {
   margin: 4px 4px;
   padding: 12px 24px;
-  font-size: 90%;
+  font-size: 80%;
 }
 
 /*
