@@ -19,8 +19,8 @@ use std::fmt;
 pub mod solution_words;
 mod tables;
 
-use tables::{AsciiCountTable, PositionMapChar};
 use solution_words::{SOLUTION_WORDS, SOLUTION_WORDS_SCORE};
+use tables::{AsciiCountTable, PositionMapChar};
 
 const WORDLE_WORD_LEN: usize = 5;
 
@@ -379,7 +379,8 @@ pub struct PlayStats {
 pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStats {
     let max_guesses = 12; // in case of infinite loop
     let mut guesses = Vec::new();
-    let mut suggestions: Vec<(usize, WordleWord)> = SOLUTION_WORDS.iter().copied().enumerate().collect();
+    let mut suggestions: Vec<(usize, WordleWord)> =
+        SOLUTION_WORDS.iter().copied().enumerate().collect();
     loop {
         guesses.push(guess_word.check_against(solution));
         if guess_word == solution || guesses.len() > max_guesses {
