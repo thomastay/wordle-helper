@@ -1,5 +1,5 @@
-#![allow(missing_docs)] // TODO
-#![allow(dead_code)] // TODO
+#![allow(missing_docs)]
+#![deny(dead_code)]
 #![deny(rust_2018_idioms)]
 #![warn(rust_2021_compatibility)]
 #![deny(clippy::too_many_arguments)]
@@ -126,8 +126,6 @@ impl fmt::Debug for WordleWord {
         write!(f, "{}", self)
     }
 }
-
-type PositionMap<T> = HashMap<u8, T>;
 
 /// Maps a guess type --> char
 #[derive(Debug, Copy, Clone)]
