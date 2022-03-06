@@ -24,31 +24,10 @@ use tables::{AsciiCountTable, PositionMapChar, PositionWrongChars};
 
 const WORDLE_WORD_LEN: usize = 5;
 
-/// Precomputed letter frequency table of the entire solution data set
-/* const STATIC_WORDLE_FREQUENCY_TABLE: [u32; 26] = [
-    807, 244, 388, 330, 938, 182, 257, 328, 572, 23, 183, 579, 262, 474, 600, 304, 28, 746, 552,
-    596, 404, 135, 171, 33, 367, 31,
-]; */
-
 /// We can represent each wordle word as a single 5 digit base 26 number
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct WordleWord(u32);
 impl WordleWord {
-    /* #[must_use]
-    pub fn score(self) -> u32 {
-        // step1: each letter is static_table[i]
-        // step2: the number of distinct letters is distinct * 26^5
-        let mut score: u32 = 0;
-        let mut char_set = HashSet::new();
-        for c in self.to_guess_str() {
-            char_set.insert(c);
-            let freq = STATIC_WORDLE_FREQUENCY_TABLE[c as usize];
-            score *= freq;
-        }
-        // add distinct letters
-        score + u32::pow(26, 5) * char_set.len() as u32
-    } */
-
     /// Returns the char at index i
     /// # Panics
     /// Out of bounds panic
@@ -105,16 +84,6 @@ impl WordleWord {
         result
     }
 }
-/* impl IntoIterator for WordleWord {
-    type Item = u8;
-    type IntoIter = WordleWordIter;
-    fn into_iter(self) -> Self::IntoIter {
-        WordleWordIter {
-            word: self,
-            i: i32::from(WORDLE_WORD_LEN - 1),
-        }
-    }
-} */
 impl TryFrom<&str> for WordleWord {
     type Error = &'static str;
 
@@ -157,24 +126,6 @@ impl fmt::Debug for WordleWord {
         write!(f, "{}", self)
     }
 }
-
-/* pub struct WordleWordIter {
-    word: WordleWord,
-    i: i32,
-}
-impl Iterator for WordleWordIter {
-    type Item = u8;
-    fn next(&mut self) -> Option<Self::Item> {
-        let i = self.i;
-        if i >= 0 {
-            // Convert self.word into a base 26 number, and extract out the portion of power i
-            let result: u32 = (self.word.0 / (u32::pow(26, i.try_into().unwrap()))) % 26;
-            let result: u8 = result.try_into().expect("Result module 26 must fit into u8");
-            self.i -= 1;
-            Some(result + b'a')
-        } else { None }
-    }
-} */
 
 type PositionMap<T> = HashMap<u8, T>;
 
@@ -373,7 +324,7 @@ pub struct PlayStats {
 
 /// # Panics
 /// Panics if the solution word is not found in the suggestions
-// #[must_use]
+#[must_use]
 pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStats {
     let max_guesses = 12; // in case of infinite loop
     let mut guesses = Vec::new();
