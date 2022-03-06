@@ -12,9 +12,9 @@ import {
  * Given a list of guesses, each guess being an array of pairs
  * Create the tables for use in filtering out the valid words
  */
-export function compileGuesses(
+export const compileGuesses = (
   guesses: Guess[],
-): [PositionMap<string>, PositionMap<Set<string>>, KnownCharInformation, string[]] {
+): [PositionMap<string>, PositionMap<Set<string>>, KnownCharInformation, string[]] => {
   /* Map of position to char */
   const correct: PositionMap<string> = new Map();
   /** Map of position to set of chars */
@@ -124,16 +124,16 @@ export function compileGuesses(
     errors.push(errorStr);
   }
   return [correct, wrong, knownCharInformation, errors];
-}
+};
 
-function isNotContained(c: string, knownCharInformation: KnownCharInformation) {
+const isNotContained = (c: string, knownCharInformation: KnownCharInformation) => {
   let ci;
   if ((ci = knownCharInformation.get(c))) {
     return ci.type === CharInformationType.notContained;
   } else return false;
-}
+};
 
-function incKnownCharInformation(c: string, knownCharInformation: KnownCharInformation) {
+const incKnownCharInformation = (c: string, knownCharInformation: KnownCharInformation) => {
   const ci = knownCharInformation.get(c);
   switch (ci?.type) {
     case undefined:
@@ -145,9 +145,9 @@ function incKnownCharInformation(c: string, knownCharInformation: KnownCharInfor
       ci.val += 1;
       break;
   }
-}
+};
 
-function mergeKnownCharInformation(kci: KnownCharInformation, gcki: KnownCharInformation): string {
+const mergeKnownCharInformation = (kci: KnownCharInformation, gcki: KnownCharInformation): string => {
   // kci == known char information, gcki = guess known char information
   let errorStr = "";
   for (const [c, ci] of gcki) {
@@ -183,9 +183,9 @@ function mergeKnownCharInformation(kci: KnownCharInformation, gcki: KnownCharInf
     }
   }
   return errorStr;
-}
+};
 
-export function isKnownCharInformationSubset(charCounts: Map<string, number>, kci: KnownCharInformation) {
+export const isKnownCharInformationSubset = (charCounts: Map<string, number>, kci: KnownCharInformation) => {
   for (const [c, ci] of kci) {
     const count = charCounts.get(c) || 0;
     switch (ci.type) {
@@ -201,25 +201,25 @@ export function isKnownCharInformationSubset(charCounts: Map<string, number>, kc
     }
   }
   return true;
-}
+};
 
-export function correctToString(correct: PositionMap<string>) {
+export const correctToString = (correct: PositionMap<string>) => {
   const res = [];
   for (const [pos, c] of correct) {
     res.push(`${pos + 1} -> ${c}`);
   }
   return res.join(", ");
-}
+};
 
-export function wrongToString(wrong: PositionMap<Set<string>>) {
+export const wrongToString = (wrong: PositionMap<Set<string>>) => {
   const res = [];
   for (const [pos, cs] of wrong) {
     res.push(`${pos + 1} -> [${[...cs.values()]}]`);
   }
   return res.join(", ");
-}
+};
 
-export function knownCharInformationToStrings(kci: KnownCharInformation) {
+export const knownCharInformationToStrings = (kci: KnownCharInformation) => {
   let res = [];
   const notContained = [...kci.entries()]
     .filter(([_c, { type }]) => type === CharInformationType.notContained)
@@ -239,4 +239,4 @@ export function knownCharInformationToStrings(kci: KnownCharInformation) {
     }
   }
   return res;
-}
+};

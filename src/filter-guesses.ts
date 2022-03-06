@@ -1,24 +1,24 @@
 import { incCountTable, PositionMap, KnownCharInformation } from "./common";
 import { isKnownCharInformationSubset } from "./compile-guesses";
 
-export function sortAndFilterGuesses(
+export const sortAndFilterGuesses = (
   correct: PositionMap<string>,
   wrong: PositionMap<Set<string>>,
   knownCharInformation: KnownCharInformation,
   solutionWords: string[],
   limit: number,
-): [string[], number] {
+): [string[], number] => {
   const filtered = filterGuesses(correct, wrong, knownCharInformation, solutionWords);
   sortSuggestions(filtered);
   return [filtered.slice(0, limit), filtered.length];
-}
+};
 
-export function filterGuesses(
+export const filterGuesses = (
   correct: PositionMap<string>,
   wrong: PositionMap<Set<string>>,
   knownCharInformation: KnownCharInformation,
   solutionWords: string[],
-): string[] {
+): string[] => {
   return solutionWords.filter(word => {
     for (let i = 0; i < word.length; i++) {
       const c = word[i] as string,
@@ -38,9 +38,9 @@ export function filterGuesses(
     // other than the ones which are correct
     return isKnownCharInformationSubset(charCountTable, knownCharInformation);
   });
-}
+};
 
-export function sortSuggestions(suggestions: string[]): void {
+export const sortSuggestions = (suggestions: string[]): void => {
   suggestions.sort((s1, s2) => {
     const size1 = new Set(Array.from(s1)).size;
     const size2 = new Set(Array.from(s2)).size;
@@ -51,9 +51,9 @@ export function sortSuggestions(suggestions: string[]): void {
     }
     return size2 - size1;
   });
-}
+};
 
-export function calcScore(word: string): number {
+export const calcScore = (word: string): number => {
   const charCodeForLowercaseA = 97;
   /** A to Z */
   const staticWordleFrequencyTable = [
@@ -66,4 +66,4 @@ export function calcScore(word: string): number {
     score *= staticWordleFrequencyTable[c] as number;
   }
   return score;
-}
+};
