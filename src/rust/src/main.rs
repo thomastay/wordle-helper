@@ -2,6 +2,8 @@ use wordle_helper::play_wordle;
 use wordle_helper::solution_words::SOLUTION_WORDS;
 use std::fmt;
 
+use rayon::prelude::*;
+
 const MAX_GUESSES: usize = 32;
 #[derive(Debug)]
 struct FixedCountTable([u32; MAX_GUESSES]);
@@ -39,15 +41,16 @@ impl fmt::Display for FixedCountTable {
 }
 
 fn main() {
-    let starting_word = SOLUTION_WORDS[5];
-    let mut t = FixedCountTable::new();
-    for word in SOLUTION_WORDS {
-        let num_guesses = play_wordle(starting_word, word).num_guesses;
-        t.inc(num_guesses.try_into().expect("Less than 26 guesses"));
-    }
-    println!(
-        "\"{}\": {}",
-        starting_word,
-        t
-    );
+    SOLUTION_WORDS.par_iter().for_each(|&starting_word| {
+        let mut t = FixedCountTable::new();
+        for word in SOLUTION_WORDS {
+            let num_guesses = play_wordle(starting_word, word).num_guesses;
+            t.inc(num_guesses.try_into().expect("Less than 26 guesses"));
+        }
+        println!(
+            "\"{}\": {}",
+            starting_word,
+            t
+        );
+    });
 }
