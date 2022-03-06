@@ -11,7 +11,7 @@
 #![allow(clippy::enum_glob_use)]
 #![allow(clippy::match_same_arms)]
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt;
 
@@ -20,7 +20,7 @@ pub mod solution_words;
 mod tables;
 
 use solution_words::{SOLUTION_WORDS, SOLUTION_WORDS_SCORE};
-use tables::{AsciiCountTable, PositionMapChar};
+use tables::{AsciiCountTable, PositionMapChar, PositionWrongChars};
 
 const WORDLE_WORD_LEN: usize = 5;
 
@@ -282,14 +282,14 @@ impl Default for KnownCharInformation {
 #[derive(Debug)]
 pub struct CompileGuessResult {
     correct: PositionMapChar,
-    wrong: PositionMap<HashSet<u8>>,
+    wrong: PositionWrongChars,
     known_char_information: KnownCharInformation,
 }
 
 #[must_use]
 pub fn compile_guesses(guesses: &[Guess]) -> CompileGuessResult {
     let mut correct = PositionMapChar::new();
-    let mut wrong = HashMap::new();
+    let mut wrong = PositionWrongChars::new();
     let mut known_char_information = KnownCharInformation::new();
 
     for guess in guesses {
@@ -307,11 +307,11 @@ pub fn compile_guesses(guesses: &[Guess]) -> CompileGuessResult {
                     guess_known_char_information.inc(c);
                 }
                 Wrong(c) => {
-                    add_to_set(&mut wrong, pos, c);
+                    wrong.insert(pos, c);
                     guess_known_char_information.inc(c);
                 }
                 NotContained(c) => {
-                    add_to_set(&mut wrong, pos, c);
+                    wrong.insert(pos, c);
                 }
             }
         }
@@ -358,10 +358,8 @@ fn is_valid_word(word: WordleWord, guesses: &CompileGuessResult) -> bool {
             }
             return false;
         }
-        if let Some(wrong_chars) = guesses.wrong.get(&i) {
-            if wrong_chars.contains(&c) {
-                return false;
-            }
+        if guesses.wrong.contains(i, c) {
+            return false;
         }
     }
     guesses
@@ -402,12 +400,6 @@ pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStat
             .expect("suggestions must be nonempty");
         guess_word = g;
     }
-}
-
-/// ------ helpers -------
-
-fn add_to_set(s: &mut PositionMap<HashSet<u8>>, i: u8, c: u8) {
-    s.entry(i).or_default().insert(c);
 }
 
 /// ------------ Tests --------------
