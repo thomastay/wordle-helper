@@ -97,8 +97,8 @@ function playWordleAll(startingWord: string): string {
 }
 
 function analyseStartingWords(start: number, end: number): void {
-  sortSuggestions(allSolutions);
-  const startingWords = allSolutions.slice(start, end);
+  sortSuggestions(solutionWords);
+  const startingWords = solutionWords.slice(start, end);
   console.log("{");
   for (const startingWord of startingWords) {
     const wordsFailedStr = playWordleAll(startingWord);

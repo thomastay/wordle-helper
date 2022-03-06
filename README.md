@@ -4,7 +4,7 @@
 Helps you play wordle.
 
 # Building
-You need Node and Go to build the wordle helper.
+You need Node, [pnpm](https://pnpm.io), [Go](https://go.dev) and [Ninja](https://ninja-build.org) to build the wordle helper.
 
 ```
 pnpm i
