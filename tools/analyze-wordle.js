@@ -1,11 +1,22 @@
 import solutionWords from "../src/solutionWords.json" assert { type: "json" };
-import analysis from "./analysis-formatted.json" assert { type: "json" };
-const solutionWordsMap = new Map(solutionWords.map((w, i) => [w, i]));
+import analysis from "./analysis.json" assert { type: "json" };
+// const solutionWordsMap = new Map(solutionWords.map((w, i) => [w, i]));
 
-function wordsWithFailure(n) {
-  return Object.entries(analysis)
-    .filter(([word, c]) => c === n)
-    .map(([word]) => solutionWordsMap.get(word));
+// returns a list of [word, number of words that are > n] with strategy
+function numGreaterThan(n) {
+  return Object.entries(analysis).map(([word, numTakenArr]) => {
+    const arr = numTakenArr.slice(n + 1);
+    const sum = arr.reduce((acc, x) => acc + x);
+    return [word, sum];
+  });
+}
+function findBestGreaterThan(n) {
+  return numGreaterThan(n)
+    .sort(([_a, b], [_a2, b2]) => b - b2)
+    .slice(0, 5);
 }
 
-console.log([...wordsWithFailure(5), ...wordsWithFailure(6), ...wordsWithFailure(7)]);
+for (let i = 2; i <= 6; i++) {
+  console.log("Greater than " + i);
+  console.log(findBestGreaterThan(i));
+}
