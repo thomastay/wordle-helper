@@ -12,6 +12,11 @@ function toU32(word) {
   return res;
 }
 
+const STATIC_WORDLE_FREQUENCY_TABLE= [
+    807, 244, 388, 330, 938, 182, 257, 328, 572, 23, 183, 579, 262, 474, 600, 304, 28, 746, 552,
+    596, 404, 135, 171, 33, 367, 31,
+];
+
 /*
     pub fn score(self) -> u32 {
         // step1: each letter is static_table[i]
@@ -28,11 +33,17 @@ function toU32(word) {
     }
 */
 // TODO make this similar to calcScore
+function scoreNoLen(word) {
+  let score = 1;
+  for (let i = 0; i < word.length; i++) {
+    const c = word.charCodeAt(i) - charCodeForLowercaseA;
+    score *= STATIC_WORDLE_FREQUENCY_TABLE[c];
+  }
+  return score;
+}
+const maxScore = solutionWords.map(scoreNoLen).reduce((max, x) => x > max ? x : max);
+
 function score(word) {
-  const STATIC_WORDLE_FREQUENCY_TABLE= [
-      807, 244, 388, 330, 938, 182, 257, 328, 572, 23, 183, 579, 262, 474, 600, 304, 28, 746, 552,
-      596, 404, 135, 171, 33, 367, 31,
-  ];
   const charSet = new Set();
   let score = 1;
   for (let i = 0; i < word.length; i++) {
@@ -40,16 +51,21 @@ function score(word) {
     score *= STATIC_WORDLE_FREQUENCY_TABLE[c];
     charSet.add(c);
   }
-  score += 342269084820807 * charSet.size;
-  return score
+  return maxScore * charSet.size + score
 }
+const ROUND = 1 << 28;
+let solutionWordsScore = solutionWords.map(score);
+// we scale from [a, b] --> [0, 1 << 28]
+const maxScore2 = solutionWordsScore.reduce((max, x) => x > max ? x : max);
+const minScore2 = solutionWordsScore.reduce((min, x) => x < min ? x : min);
+const scale = maxScore2 - minScore2; // b - a
+solutionWordsScore = solutionWordsScore.map(s => Math.round( ((s - minScore2) / scale) * ROUND ));
 
 function toWordleWordNewtype(num) {
   return `WordleWord(${num})`;
 }
 
 const solutionWordsU32 = solutionWords.map(toU32).map(toWordleWordNewtype);
-const solutionWordsScore = solutionWords.map(score);
 
 const outFileName = process.argv[2];
 writeFileSync(outFileName,`\
@@ -64,6 +80,6 @@ use crate::WordleWord;
 /// List of wordle solution words
 pub const SOLUTION_WORDS: [WordleWord; ${solutionWords.length}] = [${solutionWordsU32}];
 
-pub const SOLUTION_WORDS_SCORE: [u64; ${solutionWords.length}] = [${solutionWordsScore}];
+pub const SOLUTION_WORDS_SCORE: [u32; ${solutionWords.length}] = [${solutionWordsScore}];
 `
 );
