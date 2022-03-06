@@ -1,0 +1,9 @@
+rule nodeRun
+    command = node $in $out
+
+rule rustBuild
+    command = cargo build --release
+
+build src/solution_words.rs: nodeRun ./make-solution-words.js
+
+build target/release/wordle_helper.exe: rustBuild | src/lib.rs src/main.rs src/tables.rs src/solution_words.rs
