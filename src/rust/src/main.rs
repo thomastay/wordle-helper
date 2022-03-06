@@ -41,16 +41,19 @@ impl fmt::Display for FixedCountTable {
 }
 
 fn main() {
-    SOLUTION_WORDS.par_iter().for_each(|&starting_word| {
+    let res = SOLUTION_WORDS.par_iter().map(|&starting_word| {
         let mut t = FixedCountTable::new();
         for word in SOLUTION_WORDS {
             let num_guesses = play_wordle(starting_word, word).num_guesses;
             t.inc(num_guesses.try_into().expect("Less than 26 guesses"));
         }
+        t
+    }).collect::<Vec<_>>();
+    for (i, t) in res.iter().enumerate() {
         println!(
-            "\"{}\": {}",
-            starting_word,
+            "\"{}\": {},",
+            SOLUTION_WORDS[i],
             t
         );
-    });
+    }
 }
