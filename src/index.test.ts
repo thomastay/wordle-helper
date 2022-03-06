@@ -87,24 +87,21 @@ function playWordle(startingWord: string, solutionWord: string): GuessStats {
   }
 }
 
-function playWordleAll(startingWord: string): void {
+function playWordleAll(startingWord: string): string {
+  const wordsFailed: CountTable<number> = new Map();
   for (const solutionWord of solutionWords) {
-    playWordle(startingWord, solutionWord);
+    const stats = playWordle(startingWord, solutionWord);
+    incCountTable(wordsFailed, stats.guessWords.length);
   }
+  return JSON.stringify(mapToObj(wordsFailed));
 }
 
 function analyseStartingWords(start: number, end: number): void {
-  const allSolutions = solutionWords.slice(0); // don't alter the global
-  sortSuggestions(allSolutions);
-  const startingWords = allSolutions.slice(start, end);
+  sortSuggestions(solutionWords);
+  const startingWords = solutionWords.slice(start, end);
   console.log("{");
   for (const startingWord of startingWords) {
-    const wordsFailed: CountTable<number> = new Map();
-    for (const solutionWord of solutionWords) {
-      const stats = playWordle(startingWord, solutionWord);
-      incCountTable(wordsFailed, stats.guessWords.length);
-    }
-    const wordsFailedStr = JSON.stringify(mapToObj(wordsFailed));
+    const wordsFailedStr = playWordleAll(startingWord);
     console.log(`"${startingWord}": ${wordsFailedStr},`);
     console.error(`${start++} ${startingWord}: ${wordsFailedStr}`);
   }
@@ -117,5 +114,5 @@ const subCommand = process.argv[2];
 if (subCommand === "startingWord") {
   analyseStartingWords(Number(process.argv[3]) || 0, Number(process.argv[4]) || solutionWords.length);
 } else {
-  playWordleAll("plate");
+  console.log(playWordleAll("abide"));
 }
