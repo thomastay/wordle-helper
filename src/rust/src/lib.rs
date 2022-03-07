@@ -19,7 +19,7 @@ use std::fmt;
 pub mod solution_words;
 mod tables;
 
-use solution_words::{SOLUTION_WORDS, SOLUTION_WORDS_SCORE};
+use solution_words::SOLUTION_WORDS;
 use tables::{AsciiCountTable, PositionMapChar, PositionWrongChars};
 
 const WORDLE_WORD_LEN: usize = 5;
@@ -326,8 +326,8 @@ pub struct PlayStats {
 pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStats {
     let max_guesses = 12; // in case of infinite loop
     let mut guesses = Vec::new();
-    let mut suggestions: Vec<(usize, WordleWord)> =
-        SOLUTION_WORDS.iter().copied().enumerate().collect();
+    let mut suggestions: Vec<WordleWord> =
+        SOLUTION_WORDS.iter().copied().collect();
     loop {
         guesses.push(guess_word.check_against(solution));
         if guess_word == solution || guesses.len() > max_guesses {
@@ -336,18 +336,14 @@ pub fn play_wordle(mut guess_word: WordleWord, solution: WordleWord) -> PlayStat
             };
         }
         let compile_guesses_result = compile_guesses(&guesses);
-        suggestions.retain(|&(_, w)| is_valid_word(w, &compile_guesses_result));
+        suggestions.retain(|&w| is_valid_word(w, &compile_guesses_result));
         assert!(
-            suggestions.iter().any(|&(_, w)| w == solution),
+            suggestions.iter().any(|&w| w == solution),
             "solution word not found in suggestions {:?}",
             suggestions
         );
 
-        let (_, g) = *suggestions
-            .iter()
-            .max_by_key(|(i, _)| SOLUTION_WORDS_SCORE[*i])
-            .expect("suggestions must be nonempty");
-        guess_word = g;
+        guess_word = suggestions[0];
     }
 }
 

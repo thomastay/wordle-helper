@@ -19,6 +19,6 @@ function findBestGreaterThan(n) {
 for (let i = 2; i <= 6; i++) {
   console.log("Greater than " + i);
   let bestGreaterThan = findBestGreaterThan(i);
-  bestGreaterThan = bestGreaterThan.map(([w, n]) => `${solutionWordsMap.get(w)}, // ${w}`);
+  bestGreaterThan = bestGreaterThan.map(([w, n]) => `${solutionWordsMap.get(w)}, // ${w} (${n})`);
   console.log(bestGreaterThan);
 }
