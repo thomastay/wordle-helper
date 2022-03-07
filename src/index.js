@@ -17,8 +17,21 @@ const showStats = params.get("showStats");
 window.suggestStartingWord = () => {
   // computed by tools/analyze-wordle.js, which in turns is using src/index.test.ts startingWord --json
   const goodStartingWordsIndices = [
-    1263, 1650, 1363, 1683, 1315, 1268, 1641, 361, 435, 1462, 674, 1635, 1294, 2031, 192, 1464, 1663, 1262, 185, 1470,
-    1458, 1206, 1640, 1755, 1209, 449, 552, 239, 445, 1744, 1269, 677, 144, 1986, 1307, 1658,
+    // best to get 2 or 3
+    411, // crane
+    415, // crate
+    855, // heart
+    1215, // parse
+    1567, // slate
+    1848, // trace
+    1848, // trace
+    1853, // train
+    // best not to fail
+    1315, // psalm
+    1503, // shank
+    1668, // spunk
+    1683, // stamp
+    1710, // stomp
   ];
 
   const currStartingWordIndex = Math.floor(Math.random() * goodStartingWordsIndices.length);
