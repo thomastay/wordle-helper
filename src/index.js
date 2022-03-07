@@ -24,7 +24,6 @@ window.suggestStartingWord = () => {
     1215, // parse
     1567, // slate
     1848, // trace
-    1848, // trace
     1853, // train
     // best not to fail
     1315, // psalm
