@@ -1,4 +1,4 @@
-wordleOut = ..\\..\\..\\Documents\\website\\wordle-helper\\index.html
+wordleOut = dist/index.html
 minifyOpts = --minify
 src = src
 dist = dist

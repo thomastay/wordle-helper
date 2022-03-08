@@ -1,6 +1,3 @@
-import { NERDY_DECIMAL_LEN } from "./common";
-import { calcScore } from "./filter-guesses";
-
 export const makeSuggestionNode = (suggestion: string): HTMLElement => {
   const n = document.createElement("li");
   n.innerHTML = suggestion;
