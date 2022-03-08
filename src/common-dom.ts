@@ -1,13 +1,9 @@
 import { NERDY_DECIMAL_LEN } from "./common";
 import { calcScore } from "./filter-guesses";
 
-export const makeSuggestionNode = (suggestion: string, showStats: boolean, maxScore: number): HTMLElement => {
+export const makeSuggestionNode = (suggestion: string): HTMLElement => {
   const n = document.createElement("li");
-  if (showStats) {
-    n.innerHTML = `${suggestion} (${(calcScore(suggestion) / maxScore).toFixed(NERDY_DECIMAL_LEN)})`;
-  } else {
-    n.innerHTML = suggestion;
-  }
+  n.innerHTML = suggestion;
   return n;
 };
 

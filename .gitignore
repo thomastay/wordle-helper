@@ -2,3 +2,4 @@ node_modules/
 .ninja_log
 dist/
 bin/
+src/solution-words.json

@@ -1,4 +1,4 @@
-import solutionWords from "../src/solutionWords.json" assert { type: "json" };
+import solutionWords from "../src/solution-words.json" assert { type: "json" };
 import analysis from "./analysis.json" assert { type: "json" };
 const solutionWordsMap = new Map(solutionWords.map((w, i) => [w, i]));
 

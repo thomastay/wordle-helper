@@ -1,5 +1,5 @@
 "use strict";
-import solutionWords from "./solutionWords.json";
+import solutionWords from "./solution-words.json";
 import { GuessType, isAlpha, incCountTable, NERDY_DECIMAL_LEN } from "./common";
 import { makeSuggestionNode, makeDOMElt, makeParagraph, NUM_SUGGESTIONS } from "./common-dom";
 import {
@@ -9,7 +9,7 @@ import {
   correctToString,
   wrongToString,
 } from "./compile-guesses";
-import { sortAndFilterGuesses, calcScore } from "./filter-guesses";
+import { sortAndFilterGuesses } from "./filter-guesses";
 
 const params = new URLSearchParams(document.location.search);
 const showStats = params.get("showStats");
@@ -134,15 +134,7 @@ window.update = isFirstLoad => {
   );
 
   // -------- Sort and display it to the screen -----------
-  let maxScore = 0;
-
-  if (showStats) {
-    for (const s of suggestions) {
-      const score = calcScore(s);
-      if (score > maxScore) maxScore = score;
-    }
-  }
-  const suggestionsNodes = suggestions.map(s => makeSuggestionNode(s, showStats, maxScore));
+  const suggestionsNodes = suggestions.map(makeSuggestionNode);
   if (numFilteredTotal > suggestions.length) {
     afterSuggestionsElement.append(makeParagraph(`(${suggestions.length} out of ${numFilteredTotal} words shown)`));
   }

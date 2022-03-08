@@ -5,8 +5,8 @@
  */
 import { assert, Guess, GuessType, PositionMap, CountTable, incCountTable, mapToObj } from "./common";
 import { compileGuesses } from "./compile-guesses";
-import { filterGuesses, sortSuggestions } from "./filter-guesses";
-import solutionWords from "./solutionWords.json";
+import { filterGuesses } from "./filter-guesses";
+import solutionWords from "./solution-words.json";
 
 function mapToSortedList<T>(m: PositionMap<T>): T[] {
   const keys = [...m.keys()].sort();
@@ -78,7 +78,6 @@ function playWordle(startingWord: string, solutionWord: string): GuessStats {
       "Errors is nonempty",
     );
     const suggestions = filterGuesses(correct, wrong, knownCharInformation, solutionWords);
-    sortSuggestions(suggestions);
     if (!suggestions.some(sugg => sugg === solutionWord)) {
       console.log("Suggestions", suggestions);
       throw new Error("Solution word not found in suggestions");
@@ -97,7 +96,6 @@ function playWordleAll(startingWord: string): string {
 }
 
 function analyseStartingWords(start: number, end: number): void {
-  sortSuggestions(solutionWords);
   const startingWords = solutionWords.slice(start, end);
   console.log("{");
   for (const startingWord of startingWords) {

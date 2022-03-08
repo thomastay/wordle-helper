@@ -25,16 +25,18 @@ rule gobuilddir
 
 build $bin/build.exe: gobuilddir cmd/build
 
+build $src/rust/src/solution_words.rs $src/solution-words.json: nodeRun tools/make-solution-words.js | $src/solution-words-alphabetical.json
+
 build $dist/index.css: esbuild $src/index.css
 
-build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts $src/common-dom.ts
+build $dist/index.js: esbuild $src/index.js | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts $src/common-dom.ts $src/solution-words.json
 
-build $dist/make-suggestion-nodes.cjs: esbuild $tools/make-suggestion-nodes.js | $src/common.ts $src/filter-guesses.ts $src/common-dom.ts $src/compile-guesses.ts
+build $dist/make-suggestion-nodes.cjs: esbuild $tools/make-suggestion-nodes.js | $src/common.ts $src/filter-guesses.ts $src/common-dom.ts $src/compile-guesses.ts $src/solution-words.json
   minifyOpts = --platform=node
 
 build $dist/suggestions.txt $dist/afterSuggestions.txt: nodeRun $dist/make-suggestion-nodes.cjs
 
-build $dist/index.test.js: esbuild $src/index.test.ts | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts
+build $dist/index.test.js: esbuild $src/index.test.ts | $src/compile-guesses.ts $src/common.ts $src/filter-guesses.ts $src/solution-words.json
   minifyOpts = --platform=node
 
 build $wordleOut $out/bundle-size.json: buildTemplate $src/template.html $dist/index.js $dist/index.css $dist/suggestions.txt $dist/afterSuggestions.txt | $bin/build.exe

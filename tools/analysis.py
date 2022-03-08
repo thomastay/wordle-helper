@@ -1,6 +1,6 @@
 import string, json
 from collections import Counter
-with open("../src/solutionWords.json") as f:
+with open("../src/solution-words-alphabetical.json") as f:
     solutionWords = json.load(f)
     freq = Counter()
     for word in solutionWords:
